@@ -50,3 +50,28 @@ export const megaMenu = {
     ],
   },
 };
+
+
+
+export const cards = [
+  {
+    img: "/icons/save-money.png",
+    title: "Save Your Money",
+    text: "Save money on utilities & increase property value using solar power.",
+  },
+  {
+    img: "/icons/home-energy.png",
+    title: "Your Home Is Energy",
+    text: "Use free solar energy every day with a sustainable rooftop setup.",
+  },
+  {
+    img: "/icons/consult.png",
+    title: "Consult & Planning",
+    text: "Our industrial solar systems are engineered to serve large clients.",
+  },
+  {
+    img: "/icons/engineers.png",
+    title: "Certified Engineers",
+    text: "Our certified solar engineers design reliable systems for all.",
+  },
+];
