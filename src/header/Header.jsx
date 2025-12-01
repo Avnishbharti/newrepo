@@ -77,10 +77,8 @@ const Header = () => {
       >
         <div className="container mx-auto px-4">
           <div className="w-full flex items-center justify-between py-4">
-            {/* Logo */}
             <img src={logo} alt="logo" className="h-10 w-auto" />
 
-            {/* NAVIGATION */}
             <div className="flex items-center justify-end gap-4">
               <nav className="hidden lg:flex items-center gap-8 relative">
                 {["Services", "Registrations", "Compliance", "Contact Us"].map(
@@ -99,7 +97,6 @@ const Header = () => {
                   )
                 )}
 
-                {/* MEGA DROPDOWN */}
                 {openMenu && (
                   <div
                     className="fixed top-20 bg-white shadow-xl rounded-2xl border border-gray-200 h-[400px] flex opacity-0 translate-y-2 transition-all duration-200 ease-out"
@@ -129,7 +126,6 @@ const Header = () => {
                       ))}
                     </div>
 
-                    {/* RIGHT SIDE SUB-ITEMS */}
                     <div className="w-2/3 p-6 overflow-y-auto grid grid-cols-3 gap-4">
                       {megaMenu[openMenu].categories[
                         activeCategoryIndex
@@ -146,50 +142,49 @@ const Header = () => {
                   </div>
                 )}
               </nav>
-              <FiSearch
-                size={20}
-                className="text-gray-700 cursor-pointer"
-                onClick={() => setOpen(!open)}
-              />
-
-              {/* 🔥 COLLAPSIBLE INPUT THAT EXPANDS LEFT */}
-              <div
-                ref={wrapperRef}
-                className={`overflow-hidden transition-all duration-300 
-                ${open ? "w-48" : "w-0"}`}
-              >
-                <input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Search..."
-                  className={`border border-gray-300 rounded-full px-4 py-1 text-sm outline-none bg-white transition-all duration-300 ${
-                    open ? "opacity-100" : "opacity-0"
-                  }`}
-                  style={{
-                    width: open ? "100%" : "0px",
-                    paddingLeft: open ? "16px" : "0px",
-                    paddingRight: open ? "16px" : "0px",
-                  }}
+              <div className="flex items-center">
+                <FiSearch
+                  size={20}
+                  className="text-gray-700 cursor-pointer"
+                  onClick={() => setOpen(!open)}
                 />
-              </div>
-            </div>
 
-            {/* MOBILE BUTTON */}
-            <button
-              className="lg:hidden text-3xl"
-              onClick={() => setDrawerOpen(true)}
-            >
-              ☰
-            </button>
+                <div
+                  ref={wrapperRef}
+                  className={`overflow-hidden transition-all duration-300 
+                ${open ? "w-44" : "w-0"}`}
+                >
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    placeholder="Search..."
+                    className={`border border-gray-300 rounded-full px-4 py-1 text-sm outline-none bg-white transition-all duration-300 ${
+                      open ? "opacity-100" : "opacity-0"
+                    }`}
+                    style={{
+                      width: open ? "100%" : "0px",
+                      paddingLeft: open ? "16px" : "0px",
+                      paddingRight: open ? "16px" : "0px",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <button
+                className="lg:hidden text-3xl"
+                onClick={() => setDrawerOpen(true)}
+              >
+                ☰
+              </button>
+            </div>
           </div>
         </div>
       </header>
       <div
-        className={`fixed top-0 right-0 h-full w-full bg-white shadow-xl md:w-96 z-[100000] transition-transform duration-300 ${
-          drawerOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-[85vw] max-w-[320px] bg-white shadow-xl z-50 
+  transition-transform duration-300 overflow-y-auto overflow-x-hidden
+  ${drawerOpen ? "translate-x-0" : "translate-x-[100%]"}`}
       >
-        {/* Drawer Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b">
           <h2 className="text-xl font-bold text-green-600">Menu</h2>
 
@@ -201,7 +196,6 @@ const Header = () => {
           </button>
         </div>
 
-        {/* DRAWER CONTENT */}
         <div className="px-4 py-4 flex flex-col gap-3">
           {Object.keys(megaMenu).map((menu, i) => (
             <div key={i}>
@@ -249,7 +243,7 @@ const Header = () => {
       {drawerOpen && (
         <div
           onClick={() => setDrawerOpen(false)}
-          className="fixed inset-0 bg-black/40 z-[9999]"
+          className="fixed inset-0 bg-black/40 z-40"
         ></div>
       )}
     </>

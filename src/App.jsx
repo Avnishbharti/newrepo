@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./home/HomePage";
 import Layout from "./Layout";
 import Service from "./services/Service";
+import AdminLayout from "./admin/AdminLayout";
+import Login from "./admin/login/Login";
 
 const App = () => {
   return (
@@ -12,6 +14,8 @@ const App = () => {
           <Route index element={<HomePage />} />
           <Route path="service" element={<Service />} />
         </Route>
+        <Route path="/login" element={<Login />} />
+        <Route path="/:userId/admin" element={<AdminLayout />}></Route>
       </Routes>
     </BrowserRouter>
   );

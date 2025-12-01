@@ -9,3 +9,20 @@
   scrollbar-width: none;
 }
 
+
+/* Hide clear (X) button in Chrome, Safari, Edge mobile */
+input::-webkit-search-cancel-button,
+input::-webkit-search-decoration,
+input::-webkit-clear-button {
+  display: none !important;
+}
+
+/* For iOS Safari */
+input[type="text"]::-webkit-clear-button {
+  display: none !important;
+}
+
+html, body {
+  max-width: 100%;
+  overflow-x: hidden !important;
+}
