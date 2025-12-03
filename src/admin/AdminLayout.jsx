@@ -1,20 +1,18 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link, Outlet } from "react-router-dom";
 
 const AdminLayout = ({ children }) => {
 
-    const sidebarMenu = [
-  { title: "Dashboard", icon: "📊", path: "/dashboard" },
-  { title: "Category", icon: "👤", path: "category" },
-  { title: "Orders", icon: "🧾", path: "/orders" },
-  { title: "Settings", icon: "⚙️", path: "/settings" }
-];
-
+  const sidebarMenu = [
+    { title: "Dashboard", icon: "📊", path: "/dashboard" },
+    { title: "Category", icon: "👤", path: "category" },
+    { title: "Orders", icon: "🧾", path: "/orders" },
+    { title: "Settings", icon: "⚙️", path: "/settings" },
+  ];
 
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
-
       {/* ---------- Sidebar (Desktop Only) ---------- */}
       <aside className="w-64 bg-white border-r border-gray-200 shadow-md">
         <div className="p-5">
@@ -37,26 +35,19 @@ const AdminLayout = ({ children }) => {
 
       {/* ---------- Main Content Area ---------- */}
       <div className="flex-1 flex flex-col">
-
         {/* Header */}
-        <header className="bg-white shadow-md p-4 flex justify-between items-center border-b border-gray-200">
-          <h2 className="text-lg font-semibold">Admin Dashboard</h2>
+        {/* <header className="bg-white shadow-md p-4 flex justify-between items-center border-b border-gray-200">
+          <h2 className="text-lg font-semibold">{headings[lastSegment]}</h2>
 
           <div className="flex items-center gap-4">
             <span className="font-medium">Avnish</span>
-            {/* <img
-              src="https://via.placeholder.com/35"
-              alt="profile"
-              className="w-9 h-9 rounded-full border"
-            /> */}
           </div>
-        </header>
+        </header> */}
 
         {/* Page Body */}
         <main className="p-6 overflow-y-auto">
-          <Outlet/>
+          <Outlet />
         </main>
-
       </div>
     </div>
   );

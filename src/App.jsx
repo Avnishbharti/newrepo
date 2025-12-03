@@ -6,6 +6,8 @@ import AdminLayout from "./admin/AdminLayout";
 import Login from "./admin/login/Login";
 import Category from "./admin/category/Category";
 import Service from "./services/Service";
+import SubCategory from "./admin/subcategory/SubCategory";
+import Services from "./admin/service/Services";
 
 const App = () => {
   return (
@@ -18,6 +20,14 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/:userId/admin" element={<AdminLayout />}>
           <Route path="category" element={<Category />} />
+          <Route
+            path="category/:categoryId/subcategory"
+            element={<SubCategory />}
+          />
+          <Route
+            path="category/:categoryId/subcategory/:subcategoryId/services"
+            element={<Services />}
+          />
         </Route>
       </Routes>
     </BrowserRouter>

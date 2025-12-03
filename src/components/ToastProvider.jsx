@@ -25,7 +25,7 @@ export const ToastProvider = ({ children }) => {
     title,
     description,
     status = "success",
-    duration = 3000,
+    duration = 5000,
   }) => {
     const id = Date.now();
 

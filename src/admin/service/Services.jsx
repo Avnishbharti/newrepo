@@ -5,10 +5,13 @@ import Modal from "../../components/Modal";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addCategories,
-  deleteCategories,
-  getAllCategories,
-  updateCategories,
+  addService,
+  addSubCategory,
+  deleteSubCategory,
+  getAllSubCategoriesByCategoryId,
+  getServiceListBySubCategoryId,
+  updateService,
+  updateSubCategory,
 } from "../../toolkit/slices/serviceSlice";
 import { Link, useParams } from "react-router-dom";
 import { useToast } from "../../components/ToastProvider";
@@ -20,32 +23,39 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Dropdown from "../../components/Dropdown";
 import PopConfirm from "../../components/PopConfirm";
 import { EllipsisVertical } from "lucide-react";
+import FileUploader from "../../components/FileUploader";
+import ImageUploader from "../../components/ImageUploader";
 
-const categorySchema = z.object({
-  name: z.string().nonempty("Name is required"),
+const serviceSchema = z.object({
+  title: z.string().nonempty("Title is required"),
   slug: z.string().nonempty("Slug is required"),
-  icon: z.string().optional(),
-  displayStatus: z.number().min(0, "Display status is required"),
-  showHomeStatus: z.number().min(0, "Show on home is required"),
+  shortDescription: z.string().nonempty("Short description is required"),
+  fullDescription: z.string().nonempty("Full description is required"),
+  bannerImage: z.string().nonempty("Banner image is required"),
+  thumbnail: z.string().nonempty("Thumbnail is required"),
+  videoUrl: z.string().optional(),
+
   metaTitle: z.string().optional(),
   metaKeyword: z.string().optional(),
   metaDescription: z.string().optional(),
-  searchKeywords: z.string().optional(),
+
+  displayStatus: z.number(),
+  showHomeStatus: z.number(),
 });
 
-const Category = () => {
-  const { userId } = useParams();
+const Services = () => {
+  const { userId, categoryId, subcategoryId } = useParams();
   const { showToast } = useToast();
   const dispatch = useDispatch();
-  const data = useSelector((state) => state.service.categoryList);
+  const data = useSelector((state) => state.service.serviceList);
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [rowData, setRowData] = useState(null);
 
   useEffect(() => {
-    dispatch(getAllCategories());
-  }, []);
+    dispatch(getServiceListBySubCategoryId(subcategoryId));
+  }, [dispatch, subcategoryId]);
 
   const filteredData = useMemo(() => {
     if (!search) return data;
@@ -60,22 +70,25 @@ const Category = () => {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: zodResolver(categorySchema),
+    resolver: zodResolver(serviceSchema),
     defaultValues: {
-      name: "",
+      title: "",
       slug: "",
-      icon: "",
-      displayStatus: 0,
-      showHomeStatus: 0,
+      shortDescription: "",
+      fullDescription: "",
+      bannerImage: "",
+      thumbnail: "",
+      videoUrl: "",
       metaTitle: "",
       metaKeyword: "",
       metaDescription: "",
-      searchKeywords: "",
+      displayStatus: 0,
+      showHomeStatus: 0,
     },
   });
 
   const handleDelete = (rowData) => {
-    dispatch(deleteCategories({ id: rowData?.id, userId }))
+    dispatch(deleteSubCategory({ id: rowData?.id, userId }))
       .then((resp) => {
         if (resp.meta.requestStatus === "fulfilled") {
           showToast({
@@ -83,7 +96,7 @@ const Category = () => {
             description: "Category has been deleted successfully !.",
             status: "success",
           });
-          dispatch(getAllCategories());
+          dispatch(getServiceListBySubCategoryId(subcategoryId));
         } else {
           showToast({
             title: resp?.payload?.status,
@@ -101,36 +114,40 @@ const Category = () => {
       });
   };
 
-  const handleEdit = (rowItem) => {
-    console.log("dfjbhjdfhjdfg", rowItem);
+  const handleEdit = (item) => {
     reset({
-      name: rowItem?.name,
-      slug: rowItem?.slug,
-      icon: rowItem?.icon,
-      displayStatus: rowItem?.displayStatus,
-      showHomeStatus: rowItem?.showHomeStatus,
-      metaTitle: rowItem?.metaTitle,
-      metaKeyword: rowItem?.metaKeyword,
-      metaDescription: rowItem?.metaDescription,
-      searchKeywords: rowItem?.searchKeywords,
+      title: item?.title,
+      slug: item?.slug,
+      shortDescription: item?.shortDescription,
+      fullDescription: item?.fullDescription,
+      bannerImage: item?.bannerImage,
+      thumbnail: item?.thumbnail,
+      videoUrl: item?.videoUrl,
+      metaTitle: item?.metaTitle,
+      metaKeyword: item?.metaKeyword,
+      metaDescription: item?.metaDescription,
+      displayStatus: item?.displayStatus,
+      showHomeStatus: item?.showHomeStatus,
     });
-    setRowData(rowItem);
+    setRowData(item);
     setOpenModal(true);
   };
 
   const onSubmit = (data) => {
+    data.categoryId = categoryId;
+    data.subCategoryId = categoryId;
     if (rowData) {
-      dispatch(updateCategories({ id: rowData?.id, userId, data }))
+      dispatch(updateService({ id: rowData?.id, userId, data }))
         .then((resp) => {
           if (resp.meta.requestStatus === "fulfilled") {
             showToast({
               title: "Success!",
-              description: "Category has been updated successfully !.",
+              description: "Service has been updated successfully !.",
               status: "success",
             });
             setOpenModal(false);
             setRowData(null);
-            dispatch(getAllCategories());
+            dispatch(getServiceListBySubCategoryId(subcategoryId));
           } else {
             showToast({
               title: resp?.payload?.status,
@@ -142,21 +159,21 @@ const Category = () => {
         .catch(() => {
           showToast({
             title: "Something went wrong !.",
-            description: "Failed to update category.",
+            description: "Failed to update service.",
             status: "error",
           });
         });
     } else {
-      dispatch(addCategories({ userId, data }))
+      dispatch(addService({ userId, data }))
         .then((resp) => {
           if (resp.meta.requestStatus === "fulfilled") {
             showToast({
               title: "Success!",
-              description: "Category has been added successfully.",
+              description: "Service has been added successfully.",
               status: "success",
             });
             setOpenModal(false);
-            dispatch(getAllCategories());
+            dispatch(getServiceListBySubCategoryId(subcategoryId));
           } else {
             showToast({
               title: resp?.payload?.status,
@@ -168,7 +185,7 @@ const Category = () => {
         .catch(() => {
           showToast({
             title: "Something went wrong !.",
-            description: "Failed to add category.",
+            description: "Failed to add service.",
             status: "error",
           });
         });
@@ -177,16 +194,9 @@ const Category = () => {
 
   const dummyColumns = [
     {
-      title: "Name",
-      dataIndex: "name",
-      render: (value, record) => (
-        <Link
-          to={`${record?.id}/subcategory`}
-          className="font-medium text-blue-600"
-        >
-          {value}
-        </Link>
-      ),
+      title: "Title",
+      dataIndex: "title",
+      render: (value, record) => <p className="font-medium">{value}</p>,
     },
     {
       title: "Meta title",
@@ -210,11 +220,6 @@ const Category = () => {
     {
       title: "Meta keywords",
       dataIndex: "metaKeyword",
-      render: (value) => <p className="text-wrap">{value}</p>,
-    },
-    {
-      title: "Search keywords",
-      dataIndex: "searchKeywords",
       render: (value) => <p className="text-wrap">{value}</p>,
     },
     {
@@ -265,14 +270,14 @@ const Category = () => {
           onChange={(e) => setSearch(e.target.value)}
           wrapperClassName="w-80"
         />
-        <Button onClick={() => setOpenModal(true)}>Add category</Button>
+        <Button onClick={() => setOpenModal(true)}>Add service</Button>
       </div>
     );
   }, [search]);
 
   return (
     <>
-      <h2 className="text-lg font-semibold">Categories list</h2>
+      <h2 className="text-lg font-semibold">Service list</h2>
       <Table
         columns={dummyColumns}
         dataSource={filteredData}
@@ -280,25 +285,26 @@ const Category = () => {
         className="w-full"
       />
       <Modal
-        title={rowData ? "Update category" : "Create category"}
+        title={rowData ? "Update service" : "Create service"}
         open={openModal}
         width={"60%"}
         onCancel={() => setOpenModal(false)}
         onOk={handleSubmit(onSubmit)}
       >
         <form className="grid grid-cols-2 gap-6 max-h-[60vh] overflow-auto px-2 py-2.5">
-          {/* Name */}
+          {/* Title */}
           <div className="flex flex-col">
-            <label className="mb-1">Name</label>
+            <label className="mb-1">Title</label>
             <Controller
-              name="name"
+              name="title"
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
-                <Input {...field} placeholder="Enter name" />
+                <Input {...field} placeholder="Enter title" />
               )}
             />
-            {errors.name && <p className="text-red-600 text-sm">Required</p>}
+            {errors.title && (
+              <p className="text-red-600 text-sm">{errors.title.message}</p>
+            )}
           </div>
 
           {/* Slug */}
@@ -307,29 +313,98 @@ const Category = () => {
             <Controller
               name="slug"
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
                 <Input {...field} placeholder="Enter slug" />
               )}
             />
-            {errors.slug && <p className="text-red-600 text-sm">Required</p>}
+            {errors.slug && (
+              <p className="text-red-600 text-sm">{errors.slug.message}</p>
+            )}
           </div>
 
-          {/* Icon */}
-          <div className="flex flex-col">
-            <label className="mb-1">Icon</label>
+          {/* Short Description */}
+          <div className="flex flex-col col-span-2">
+            <label className="mb-1">Short Description</label>
             <Controller
-              name="icon"
+              name="shortDescription"
               control={control}
               render={({ field }) => (
-                <Input {...field} placeholder="Enter icon" />
+                <Input
+                  as="textarea"
+                  rows={3}
+                  {...field}
+                  placeholder="Short description"
+                />
+              )}
+            />
+            {errors.shortDescription && (
+              <p className="text-red-600 text-sm">
+                {errors.shortDescription.message}
+              </p>
+            )}
+          </div>
+
+          {/* Full Description */}
+          <div className="flex flex-col col-span-2">
+            <label className="mb-1">Full Description</label>
+            <Controller
+              name="fullDescription"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  as="textarea"
+                  rows={5}
+                  {...field}
+                  placeholder="Full description"
+                />
+              )}
+            />
+            {errors.fullDescription && (
+              <p className="text-red-600 text-sm">
+                {errors.fullDescription.message}
+              </p>
+            )}
+          </div>
+
+          {/* Banner Image */}
+          <div className="flex flex-col">
+            <label className="mb-1">Banner Image</label>
+            <Controller
+              name="bannerImage"
+              control={control}
+              render={({ field }) => (
+                <Input {...field} placeholder="Banner image URL" />
+              )}
+            />
+          </div>
+
+          {/* Thumbnail */}
+          <div className="flex flex-col">
+            <label className="mb-1">Thumbnail</label>
+            <Controller
+              name="thumbnail"
+              control={control}
+              render={({ field }) => (
+                <Input {...field} placeholder="Thumbnail URL" />
+              )}
+            />
+          </div>
+
+          {/* Video URL */}
+          <div className="flex flex-col col-span-2">
+            <label className="mb-1">Video URL</label>
+            <Controller
+              name="videoUrl"
+              control={control}
+              render={({ field }) => (
+                <Input {...field} placeholder="Video URL" />
               )}
             />
           </div>
 
           {/* Display Status */}
           <div className="flex flex-col">
-            <label className="mb-1 font-medium">Display Status</label>
+            <label className="mb-1">Display Status</label>
             <Controller
               name="displayStatus"
               control={control}
@@ -340,19 +415,17 @@ const Category = () => {
                     { label: "Inactive", value: 0 },
                     { label: "Active", value: 1 },
                   ]}
-                  placeholder="Select status"
                 />
               )}
             />
           </div>
 
-          {/* Show on Home */}
+          {/* Show Home Status */}
           <div className="flex flex-col">
             <label className="mb-1">Show on Home</label>
             <Controller
               name="showHomeStatus"
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
                 <Select
                   {...field}
@@ -360,7 +433,6 @@ const Category = () => {
                     { label: "No", value: 0 },
                     { label: "Yes", value: 1 },
                   ]}
-                  placeholder="Select option"
                 />
               )}
             />
@@ -373,19 +445,19 @@ const Category = () => {
               name="metaTitle"
               control={control}
               render={({ field }) => (
-                <Input {...field} placeholder="Meta Title" />
+                <Input {...field} placeholder="Meta title" />
               )}
             />
           </div>
 
-          {/* Meta Keywords */}
+          {/* Meta Keyword */}
           <div className="flex flex-col col-span-2">
-            <label className="mb-1">Meta Keywords</label>
+            <label className="mb-1">Meta Keyword</label>
             <Controller
               name="metaKeyword"
               control={control}
               render={({ field }) => (
-                <Input {...field} placeholder="Meta Keywords" />
+                <Input {...field} placeholder="Meta keywords" />
               )}
             />
           </div>
@@ -398,23 +470,44 @@ const Category = () => {
               control={control}
               render={({ field }) => (
                 <Input
-                  {...field}
                   as="textarea"
                   rows={3}
-                  placeholder="Meta Description"
+                  {...field}
+                  placeholder="Meta description"
                 />
               )}
             />
           </div>
 
-          {/* Search Keywords */}
           <div className="flex flex-col col-span-2">
-            <label className="mb-1">Search Keywords</label>
+            <label className="mb-1">Meta Description</label>
             <Controller
-              name="searchKeywords"
+              name="metaDescription"
               control={control}
               render={({ field }) => (
-                <Input {...field} placeholder="Search Keywords" />
+                <FileUploader
+                  uploadUrl="/api/images/upload"
+                  // value={uploadedFiles}
+                  // onChange={setUploadedFiles}
+                  multiple={true}
+                  accept="*"
+                />
+              )}
+            />
+          </div>
+          <div className="flex flex-col col-span-2">
+            <label className="mb-1">Meta Description</label>
+            <Controller
+              name="metaDescription"
+              control={control}
+              render={({ field }) => (
+                <ImageUploader
+                  uploadUrl="/api/images/upload"
+                  // value={uploadedFiles}
+                  // onChange={setUploadedFiles}
+                  multiple={true}
+                  accept="*"
+                />
               )}
             />
           </div>
@@ -424,4 +517,4 @@ const Category = () => {
   );
 };
 
-export default Category;
+export default Services;
