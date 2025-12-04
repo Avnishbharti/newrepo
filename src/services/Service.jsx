@@ -1,9 +1,41 @@
 import { BsShieldCheck, BsWhatsapp } from "react-icons/bs";
 import bgImg from "../assets/serviceimg.jpg";
-
+import { MapPin } from "lucide-react";
+import { useState } from "react";
 
 const Service = () => {
+  const [location, setLocation] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  const getLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+            {
+              headers: {
+                "User-Agent": "YourAppName", // required by Nominatim
+              },
+            }
+          );
+
+          const data = await res.json();
+          setLocation(data?.display_name || "Location not found");
+        } catch (error) {
+          console.error(error);
+          alert("Failed to fetch address");
+        }
+      },
+      (error) => {
+        alert("Unable to get location");
+      }
+    );
+  };
+
+  console.log("dfjgdkjgdjgd", location);
 
   return (
     <>
@@ -91,6 +123,32 @@ const Service = () => {
                     <option>Karnataka</option>
                   </select>
 
+                  <label className="block text-sm font-semibold">
+                    Your Location
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      type="text"
+                      readOnly
+                      value={location}
+                      placeholder="Click the icon to get your location"
+                      className="w-full border rounded-md px-4 py-2 pr-10"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={getLocation}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 cursor-pointer"
+                    >
+                      {loading ? (
+                        <span className="animate-spin">⏳</span>
+                      ) : (
+                        <MapPin size={20} />
+                      )}
+                    </button>
+                  </div>
+
                   {/* WhatsApp */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 text-xs sm:text-sm pt-1 sm:pt-2">
                     <div className="flex items-center gap-1 flex-1 min-w-0">
@@ -156,7 +214,6 @@ const Service = () => {
           </div>
         </div>
       </section>
-
     </>
   );
 };

@@ -9,6 +9,8 @@ import Service from "./services/Service";
 import SubCategory from "./admin/subcategory/SubCategory";
 import Services from "./admin/service/Services";
 import Blogs from "./admin/blogs/Blogs";
+import Dashboard from "./admin/dashboard/Dashboard";
+import ProtectedRoute from "./ProtectedRoute";
 
 const App = () => {
   return (
@@ -19,17 +21,54 @@ const App = () => {
           <Route path="service" element={<Service />} />
         </Route>
         <Route path="/login" element={<Login />} />
-        <Route path="/:userId/admin" element={<AdminLayout />}>
-          <Route path="category" element={<Category />} />
+        <Route
+          path="/:userId/admin"
+          element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="category"
+            element={
+              <ProtectedRoute>
+                <Category />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="category/:categoryId/subcategory"
-            element={<SubCategory />}
+            element={
+              <ProtectedRoute>
+                <SubCategory />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="category/:categoryId/subcategory/:subcategoryId/services"
-            element={<Services />}
+            element={
+              <ProtectedRoute>
+                <Services />
+              </ProtectedRoute>
+            }
           />
-          <Route path="blogs" element={<Blogs />} />
+          <Route
+            path="blogs"
+            element={
+              <ProtectedRoute>
+                <Blogs />
+              </ProtectedRoute>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>

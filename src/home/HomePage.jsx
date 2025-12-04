@@ -1,17 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
+import frontImage from "../assets/front_page.jpg";
 import img1 from "../assets/nature1.jfif";
 import img2 from "../assets/nature2.webp";
 import img3 from "../assets/nature3.jpg";
 import wind from "../assets/wind.jfif";
 import { cards } from "../navData";
-import solarImg from "../assets/service2.jpg";
+// import solarImg from "../assets/service2.jpg";
+import solarImg from "../assets/section1.jpg";
+import businessImg from "../assets/business.webp";
 import { FiArrowRight, FiCheck } from "react-icons/fi";
 import bgImg from "../assets/serviceimg.jpg";
 import LogoInfiniteScroller from "./LogoInfiniteScroll";
 import ReviewSection from "./ReviewSection";
 import BlogsCarousel from "./BlogsCarousel";
+import google from "../assets/googleIcon.png";
+import glassdoor from "../assets/glassdoorIcon.png";
+import mouthshut from "../assets/moutshutlogoIcon.png";
+import { BsShieldCheck } from "react-icons/bs";
 
-const images = [img1, img2, img3];
+const images = [frontImage, img1, img2, img3];
 
 const HomePage = () => {
   const [index, setIndex] = useState(0);
@@ -124,64 +131,140 @@ const HomePage = () => {
 
   return (
     <>
-      <section className="relative h-screen w-full overflow-hidden">
+      <section className="relative w-full py-14 md:py-16 overflow-hidden">
+        {/* 🔥 Blurred Background Image */}
         <div
-          className="absolute inset-0 bg-cover bg-center transition-all duration-700"
+          className="absolute inset-0 bg-cover bg-center blur-sm scale-105"
           style={{ backgroundImage: `url(${images[index]})` }}
-        >
-          <div className="absolute inset-0 bg-black/40"></div>
-        </div>
-        <div className="relative z-10 h-full flex flex-col justify-center pl-8 md:pl-20 text-white max-w-3xl">
-          <p className="text-sm md:text-base font-semibold tracking-wide mb-4">
-            Complete Commercial, Residential & Industrial Solar Systems
+        ></div>
+
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-[#0A3558]/50"></div>
+
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto text-center text-white px-5">
+          {/* Main Heading */}
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">
+            Compliance Made Easy. Sustainability Made Possible.
+          </h2>
+
+          {/* Sub Text */}
+          <p className="text-base md:text-lg text-gray-200 max-w-6xl mx-auto mb-10">
+            This tagline positions EPR Comply as a practical, user-friendly
+            solution that removes complexity from regulatory compliance while
+            empowering businesses to operate more sustainably. It highlights
+            efficiency and environmental responsibility, presenting the brand as
+            a trusted partner that simplifies processes and supports long-term
+            ecological goals.
           </p>
 
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
-            We Invest In The <br /> Future Of Planet!
-          </h1>
+          {/* Search Field */}
+          <div className="flex justify-center mb-6">
+            <div className="flex bg-white rounded-lg overflow-hidden shadow-lg w-full max-w-2xl">
+              <input
+                type="text"
+                placeholder="EPR Registration for Plastic Waste"
+                className="flex-1 px-4 py-2 text-gray-800 focus:outline-none"
+              />
+              <button className="bg-blue-600 px-6 text-white font-semibold hover:bg-blue-700 cursor-pointer">
+                Search
+              </button>
+            </div>
+          </div>
 
-          <p className="text-base md:text-lg max-w-xl mb-6">
-            As a worldwide distributor of solar supplies, we endeavor to provide
-            fast and knowledgeable service. We can get you materials by sea or
-            air.
-          </p>
-          <div className="flex gap-4">
-            <button className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
-              More About Us
-            </button>
+          {/* Tags */}
+          <div className="flex flex-wrap justify-center gap-3 mb-10 w-full">
+            {[
+              "EPR Compliance for Plastic Waste",
+              "EPR Registration",
+              "EPR Registration for Battery Waste",
+              "EPR Registration for Used Tyres",
+              "EPR Compliance for Plastic Waste",
+              "CPCB EPR Credits",
+            ].map((item, index) => (
+              <span
+                key={index}
+                className="px-4 py-2 bg-white/10 rounded-full border border-white/20 text-[12px] hover:bg-white/20 cursor-pointer"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
 
-            <button className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">
-              More About Us!
-            </button>
+          {/* Ratings Row */}
+          <div className="flex flex-wrap justify-center gap-10 mb-12">
+            {/* Google Rating */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="flex items-center gap-2.5">
+                <img src={google} className="h-6 mb-1" alt="Google" />
+                <p className="text-yellow-400 font-semibold">4.5 Out of 5</p>
+              </div>
+              <p className="text-gray-300 text-sm">(1,284)</p>
+            </div>
+
+            {/* Glassdoor Rating */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="flex items-center gap-2.5">
+                <img src={glassdoor} className="h-6 mb-1" alt="Glassdoor" />
+                <p className="text-yellow-400 font-semibold">4.5 Out of 5</p>
+              </div>
+              <p className="text-gray-300 text-sm">(1,284)</p>
+            </div>
+
+            {/* Trustpilot Rating */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="flex items-center gap-2.5">
+                <img src={mouthshut} className="h-6 mb-1" alt="Trustpilot" />
+                <p className="text-yellow-400 font-semibold">4.5 Out of 5</p>
+              </div>
+              <p className="text-gray-300 text-sm">(1,284)</p>
+            </div>
+          </div>
+
+          <div className="w-full flex justify-center mt-10">
+            <div className="bg-white shadow-md rounded-full px-3 sm:px-6 py-1.5 sm:py-2 flex items-center gap-2 sm:gap-6 overflow-x-auto scrollbar-hide">
+              {[
+                {
+                  text: "What Sets Us Apart",
+                  icon: (
+                    <BsShieldCheck className="w-3 h-3 sm:w-4 sm:h-4 text-green-700 font-bold flex-shrink-0" />
+                  ),
+                },
+                {
+                  text: "MCA Experts",
+                  icon: (
+                    <span className="text-green-700 font-medium">500+ </span>
+                  ),
+                },
+                {
+                  text: " Reviews",
+                  icon: (
+                    <span className="text-green-700 font-medium">10,000+</span>
+                  ),
+                },
+                {
+                  text: " Monthly Clients",
+                  icon: (
+                    <span className="text-green-700 font-medium">2500+ </span>
+                  ),
+                },
+                { text: "Serving India Nationwide" },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-1 sm:gap-2 flex-shrink-0 px-2 py-1 bg-gray-200 rounded-full text-xs sm:text-sm"
+                >
+                  {item.icon && item.icon}
+                  <span className="font-semibold text-gray-600 break-words hyphens-auto">
+                    {item.text}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-
-        <button
-          onClick={prevImage}
-          className="hidden md:block absolute left-6 top-1/2 -translate-y-1/2 z-20 text-white text-4xl font-thin hover:opacity-80 cursor-pointer"
-        >
-          ❮
-        </button>
-        <button
-          onClick={nextImage}
-          className="hidden md:block absolute right-6 top-1/2 -translate-y-1/2 z-20 text-white text-4xl font-thin hover:opacity-80 cursor-pointer"
-        >
-          ❯
-        </button>
-
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-          {images.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIndex(i)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 
-          ${
-            index === i ? "bg-white scale-125" : "bg-white/50 hover:bg-white/70"
-          }`}
-            ></button>
-          ))}
-        </div>
       </section>
+
       <LogoInfiniteScroller />
       <section className="w-full py-16 bg-white">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 sm:px-6 lg:px-8 items-center">
@@ -191,7 +274,7 @@ const HomePage = () => {
               alt="Solar Panels"
               className="w-full h-auto rounded-xl shadow-lg"
             />
-            <div className="absolute right-10 -bottom-8 bg-green-600 text-white p-6 rounded-xl max-w-xs shadow-xl">
+            <div className="hidden md:block absolute right-10 -bottom-8 bg-green-600 text-white p-6 rounded-xl max-w-xs shadow-xl">
               <h3 className="text-xl font-semibold mb-2">
                 Fostering Growth Of Solar Energy!
               </h3>
@@ -236,28 +319,36 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-      <section className="bg-black text-white py-20">
+      <section className="bg-black text-white py-14">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="max-w-2xl">
-            <p className="text-green-400 font-medium mb-3">
-              Making Tomorrow Different Today.
-            </p>
-            <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-              Energize Society With <br /> Sustainable And Reliable <br />{" "}
-              Energy Systems!
-            </h2>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-6 items-center">
+            <div className="flex flex-col">
+              <div className="max-w-2xl">
+                <p className="text-green-400 font-medium mb-3">
+                  Making Tomorrow Different Today.
+                </p>
+                <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+                  Energize Society With <br /> Sustainable And Reliable <br />{" "}
+                  Energy Systems!
+                </h2>
+              </div>
 
-          <div className="max-w-3xl mt-6 text-gray-300">
-            New capacity across the solar value chain has become necessary to
-            support PV market growth. Capital required to establish & scale
-            wafer, solar cell, and module manufacturing facilities is high.
-          </div>
+              <div className="max-w-3xl mt-6 text-gray-300">
+                New capacity across the solar value chain has become necessary
+                to support PV market growth. Capital required to establish &
+                scale wafer, solar cell, and module manufacturing facilities is
+                high.
+              </div>
 
-          <button className="mt-8 flex items-center gap-2 bg-green-600 px-6 py-3 rounded-md hover:bg-green-700 transition">
-            Explore All Features!
-            <FiArrowRight />
-          </button>
+              <button className="mt-8 w-fit flex items-center gap-2 bg-green-600 px-6 py-3 rounded-md hover:bg-green-700 transition">
+                Explore All Features!
+                <FiArrowRight />
+              </button>
+            </div>
+            <div className="flex justify-end">
+              <img src={businessImg} alt="business" className="rounded" />
+            </div>
+          </div>
 
           <div
             ref={scrollRef}
@@ -312,7 +403,7 @@ const HomePage = () => {
         </div>
       </section>
       <section className="relative w-full">
-        <div className="bg-white pb-20 mt-[-180px] relative z-20">
+        <div className="bg-white mt-[-180px] relative z-20">
           <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 relative -top-6 md:top-0">
             <div className="bg-white rounded-r-xl p-10 z-50 md:order-1 order-2">
               <div className="border-l-4 border-green-600 pl-6">
@@ -344,8 +435,7 @@ const HomePage = () => {
               </div>
             </div>
 
-            <div className="w-full md:absolute md:-top-36 md:right-10 md:w-2xl order-1 md:order-2"
-            >
+            <div className="w-full md:absolute md:-top-36 md:right-10 md:w-2xl order-1 md:order-2">
               <img
                 src={bgImg}
                 className="rounded-xl shadow-xl w-full h-[390px] object-cover z-10"

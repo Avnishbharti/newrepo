@@ -7,7 +7,7 @@ import { persistor, store } from "./toolkit/store.js";
 import { ToastProvider } from "./components/ToastProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <>
+  <div className="overflow-x-hidden md:overflow-x-visible">
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <ToastProvider>
@@ -15,5 +15,5 @@ createRoot(document.getElementById("root")).render(
         </ToastProvider>
       </PersistGate>
     </Provider>
-  </>
+  </div>
 );

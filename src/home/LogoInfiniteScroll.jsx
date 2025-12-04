@@ -45,22 +45,22 @@ const LogoInfiniteScroller = ({ speed = 40 }) => {
         onMouseMove={handleMouseMove}
       >
         {/* REAL LIST */}
-        {images.map((src, i) => (
-          <img key={i} src={src} className="h-20 w-auto object-contain" />
+        {[...images,...images]?.map((src, i) => (
+          <img key={i} src={src} className="h-8 w-auto object-contain" />
         ))}
 
         {/* DUPLICATED LIST for seamless loop */}
-        {images.map((src, i) => (
+        {[...images,...images]?.map((src, i) => (
           <img
             key={`dup-${i}`}
             src={src}
-            className="h-15 w-auto object-contain"
+            className="h-8 w-auto object-contain"
           />
         ))}
       </div>
 
       {/* CSS KEYFRAMES */}
-      <style jsx>{`
+      <style>{`
         .animate-scroll {
           animation: scroll 40s linear infinite;
         }

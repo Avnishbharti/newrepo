@@ -19,8 +19,15 @@ const Header = () => {
   const navRefs = useRef({});
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 20;
+      setScrolled((prev) => {
+        if (prev !== isScrolled) return isScrolled;
+        return prev;
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -50,7 +57,6 @@ const Header = () => {
     setActiveCategoryIndex(0);
   };
 
-  // Close when clicking outside
   useEffect(() => {
     function handleClick(e) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
@@ -61,7 +67,6 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Focus input when it opens
   useEffect(() => {
     if (open && inputRef.current) {
       inputRef.current.focus();
@@ -71,17 +76,19 @@ const Header = () => {
   return (
     <>
       <header
-        className={`w-full bg-white sticky top-0 z-50 transition-all duration-300 ${
+        className={`w-full bg-white sticky top-0 z-[10000] ${
           scrolled ? "shadow-md border-b border-gray-200" : ""
         }`}
       >
         <div className="container mx-auto px-4">
           <div className="w-full flex items-center justify-between py-4">
-            <img src={logo} alt="logo" className="h-10 w-auto" />
+            <a href="/" alt="home_page">
+              <img src={logo} alt="logo" className="h-10 w-auto" />
+            </a>
 
             <div className="flex items-center justify-end gap-4">
               <nav className="hidden lg:flex items-center gap-8 relative">
-                {["Services", "Registrations", "Compliance", "Contact Us"].map(
+                {["Services", "Blogs", "About Us", "Contact Us"].map(
                   (item) => (
                     <div
                       key={item}
@@ -142,33 +149,6 @@ const Header = () => {
                   </div>
                 )}
               </nav>
-              <div className="flex items-center">
-                <FiSearch
-                  size={20}
-                  className="text-gray-700 cursor-pointer"
-                  onClick={() => setOpen(!open)}
-                />
-
-                <div
-                  ref={wrapperRef}
-                  className={`overflow-hidden transition-all duration-300 
-                ${open ? "w-44" : "w-0"}`}
-                >
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    placeholder="Search..."
-                    className={`border border-gray-300 rounded-full px-4 py-1 text-sm outline-none bg-white transition-all duration-300 ${
-                      open ? "opacity-100" : "opacity-0"
-                    }`}
-                    style={{
-                      width: open ? "100%" : "0px",
-                      paddingLeft: open ? "16px" : "0px",
-                      paddingRight: open ? "16px" : "0px",
-                    }}
-                  />
-                </div>
-              </div>
 
               <button
                 className="lg:hidden text-3xl"
@@ -177,11 +157,38 @@ const Header = () => {
                 ☰
               </button>
             </div>
+            <div className="hidden lg:flex items-center">
+              <FiSearch
+                size={20}
+                className="text-gray-700 cursor-pointer"
+                onClick={() => setOpen(!open)}
+              />
+
+              <div
+                ref={wrapperRef}
+                className={`overflow-hidden transition-all duration-300 
+                ${open ? "w-44" : "w-0"}`}
+              >
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Search..."
+                  className={`border border-gray-300 rounded-full px-4 py-1 text-sm outline-none bg-white transition-all duration-300 ${
+                    open ? "opacity-100" : "opacity-0"
+                  }`}
+                  style={{
+                    width: open ? "100%" : "0px",
+                    paddingLeft: open ? "16px" : "0px",
+                    paddingRight: open ? "16px" : "0px",
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </header>
       <div
-        className={`fixed top-0 right-0 h-full w-[85vw] max-w-[320px] bg-white shadow-xl z-50 
+        className={`fixed top-0 right-0 h-full w-screen max-w-[320px] bg-white shadow-xl z-[99999] 
   transition-transform duration-300 overflow-y-auto overflow-x-hidden
   ${drawerOpen ? "translate-x-0" : "translate-x-full"}`}
       >

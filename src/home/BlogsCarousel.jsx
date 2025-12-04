@@ -70,7 +70,7 @@ const BlogsCarousel = () => {
   const infiniteBlogs = [...blogs, ...blogs];
 
   return (
-    <section className="py-20 max-w-7xl mx-auto px-6">
+    <section className="py-8 max-w-7xl mx-auto px-6">
       <h2 className="text-3xl font-bold mb-10">Latest Blog Posts</h2>
 
       <div className="relative overflow-hidden">

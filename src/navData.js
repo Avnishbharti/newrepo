@@ -1,5 +1,5 @@
 export const megaMenu = {
-  Registrations: {
+  Blogs: {
     categories: [
       {
         title: "Company Registration",

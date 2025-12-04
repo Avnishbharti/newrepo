@@ -105,18 +105,18 @@ const Footer = () => {
 
           {/* Copyright */}
           <div className="text-center">
-            © 2022 Solatec, All Rights Reserved. With Love by{" "}
+            © 2022 Solatec, All Rights Reserved.
             <span className="text-green-500 hover:text-green-400 cursor-pointer">
-              7oroof.com
+              epr comply.com
             </span>
           </div>
         </div>
       </div>
 
-      {/* SCROLL TO TOP BUTTON */}
+      {/* SCROLL TO TOP BUTTON
       <div className="fixed bottom-6 right-6 bg-green-600 text-white w-12 h-12 rounded-full flex items-center justify-center cursor-pointer hover:bg-green-700">
         ↑
-      </div>
+      </div> */}
 
     </footer>
   );
