@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 3000,
-    allowedHosts: ["www.eprcomply.com", "http://www.eprcomply.com/"],
+    allowedHosts: ["eprcomply.com", "www.eprcomply.com"],
     proxy: {
       "/api": {
         target: "http://localhost:8000",
