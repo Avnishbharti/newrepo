@@ -406,29 +406,26 @@ const HomePage = () => {
           <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 relative -top-6 md:top-0">
             <div className="bg-white rounded-r-xl p-10 z-50 md:order-1 order-2">
               <div className="border-l-4 border-green-600 pl-6">
-                <p className="text-gray-700 leading-relaxed">
-                  While improving the yield and performance of solar energy
-                  products, our PV industry experience enables us to provide
-                  in-depth material sourcing, financing and supply chain
-                  expertise for every step.
+                <p className="text-gray-700 leading-relaxed text-justify">
+                  While mastering the complexities of EPR regulations and waste
+                  management across plastics, e-waste, batteries, and tyres, our
+                  deep industry expertise empowers businesses to achieve
+                  effortless compliance, optimized credit trading, and verified
+                  recycling partnerships every step of the way.
                 </p>
 
-                <ul className="mt-6 space-y-4 text-gray-800">
+                <ul className="mt-6 space-y-4 text-gray-800 font-medium list-disc pl-4">
                   <li>
-                    ▪{" "}
-                    <b>
-                      Professional on-site service and support for
-                      certification.
-                    </b>
+                    Penalty-free operations through proactive monitoring and
+                    flawless annual filings.
                   </li>
                   <li>
-                    ▪{" "}
-                    <b>
-                      Regular light source for stable conversion efficiency.
-                    </b>
+                    Cost optimization via smart credit generation and strategic
+                    recycler networks.{" "}
                   </li>
                   <li>
-                    ▪ <b>Lowest LID by periodic monitoring & superior wafer.</b>
+                    Highest traceability with end-to-end documentation and
+                    certified proof of recycling.
                   </li>
                 </ul>
               </div>
