@@ -25,6 +25,8 @@ import {
   getAllSubCategoriesByCategoryId,
   getServiceListBySubCategoryId,
 } from "../../toolkit/slices/serviceSlice";
+import TextEditor from "../../components/TextEditor";
+import FileUploader from "../../components/FileUploader";
 
 const blogSchema = z.object({
   title: z.string().nonempty("Title is required"),
@@ -52,6 +54,7 @@ const Blogs = () => {
   const serviceList = useSelector((state) => state.service.serviceList);
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
+  const [descModal, setDescModal] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [rowData, setRowData] = useState(null);
 
@@ -226,6 +229,20 @@ const Blogs = () => {
       render: (value) => <p className="text-wrap">{value}</p>,
     },
     {
+      title: "Description",
+      dataIndex: "description",
+      render: (value, record) => (
+        <Button
+          onClick={() => {
+            setDescModal(true);
+            setRowData(record);
+          }}
+        >
+          View
+        </Button>
+      ),
+    },
+    {
       title: "Actions",
       dataIndex: "actions",
       render: (value, record, rowIndex) => {
@@ -327,12 +344,15 @@ const Blogs = () => {
 
           {/* Image */}
           <div className="flex flex-col">
-            <label className="mb-1">Image URL</label>
+            <label className="mb-1">Image</label>
             <Controller
               name="image"
               control={control}
               render={({ field }) => (
-                <Input {...field} placeholder="Enter image URL" />
+                <FileUploader
+                  value={field.value}
+                  onChange={(e) => field.onChange(e)}
+                />
               )}
             />
             {errors.image && (
@@ -341,7 +361,7 @@ const Blogs = () => {
           </div>
 
           {/* Summary */}
-          <div className="flex flex-col col-span-2">
+          <div className="flex flex-col">
             <label className="mb-1">Summary</label>
             <Controller
               name="summary"
@@ -366,13 +386,21 @@ const Blogs = () => {
             <Controller
               name="description"
               control={control}
-              render={({ field }) => (
-                <Input
-                  as="textarea"
-                  rows={5}
-                  {...field}
-                  placeholder="Write description"
-                />
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <TextEditor
+                    data={field?.value}
+                    onChange={(prev, editor) => {
+                      const newData = editor?.getData();
+                      field.onChange(newData);
+                    }}
+                  />
+                  {error && (
+                    <span className="text-red-500 text-sm">
+                      {error.message}
+                    </span>
+                  )}
+                </>
               )}
             />
             {errors.description && (
@@ -437,7 +465,7 @@ const Blogs = () => {
           </div>
 
           {/* Service IDs (MULTI SELECT) */}
-          <div className="flex flex-col col-span-2">
+          <div className="flex flex-col">
             <label className="mb-1">Services</label>
             <Controller
               name="serviceIds"
@@ -457,7 +485,7 @@ const Blogs = () => {
           </div>
 
           {/* Meta Title */}
-          <div className="flex flex-col col-span-2">
+          <div className="flex flex-col">
             <label className="mb-1">Meta Title</label>
             <Controller
               name="metaTitle"
@@ -469,7 +497,7 @@ const Blogs = () => {
           </div>
 
           {/* Meta Keyword */}
-          <div className="flex flex-col col-span-2">
+          <div className="flex flex-col">
             <label className="mb-1">Meta Keyword</label>
             <Controller
               name="metaKeyword"
@@ -481,7 +509,7 @@ const Blogs = () => {
           </div>
 
           {/* Meta Description */}
-          <div className="flex flex-col col-span-2">
+          <div className="flex flex-col">
             <label className="mb-1">Meta Description</label>
             <Controller
               name="metaDescription"
@@ -527,6 +555,24 @@ const Blogs = () => {
             />
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        title={"Description"}
+        open={descModal}
+        width={"60%"}
+        onCancel={() => {
+          setDescModal(false);
+          setRowData(null);
+        }}
+        footer={false}
+      >
+        <div className="px-8 py-10 max-w-4xl mx-auto max-h-[80vh] overflow-auto">
+          <div
+            className="prose prose-lg"
+            dangerouslySetInnerHTML={{ __html: rowData?.description }}
+          ></div>
+        </div>
       </Modal>
     </>
   );

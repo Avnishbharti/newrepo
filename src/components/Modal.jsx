@@ -14,6 +14,7 @@ const Modal = ({
   cancelText = "Cancel",
   okButtonProps = {},
   cancelButtonProps = {},
+  footer = true,
 }) => {
   return (
     <AnimatePresence>
@@ -49,23 +50,21 @@ const Modal = ({
             <div className="text-gray-700 mb-6">{children}</div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={onCancel}
-                {...cancelButtonProps}
-              >
-                {cancelText}
-              </Button>
+            {footer && (
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={onCancel}
+                  {...cancelButtonProps}
+                >
+                  {cancelText}
+                </Button>
 
-              <Button
-                variant="primary"
-                onClick={onOk}
-                {...okButtonProps}
-              >
-                {okText}
-              </Button>
-            </div>
+                <Button variant="primary" onClick={onOk} {...okButtonProps}>
+                  {okText}
+                </Button>
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}

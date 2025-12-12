@@ -25,6 +25,7 @@ import PopConfirm from "../../components/PopConfirm";
 import { EllipsisVertical } from "lucide-react";
 import FileUploader from "../../components/FileUploader";
 import ImageUploader from "../../components/ImageUploader";
+import TextEditor from "../../components/TextEditor";
 
 const serviceSchema = z.object({
   title: z.string().nonempty("Title is required"),
@@ -350,13 +351,21 @@ const Services = () => {
             <Controller
               name="fullDescription"
               control={control}
-              render={({ field }) => (
-                <Input
-                  as="textarea"
-                  rows={5}
-                  {...field}
-                  placeholder="Full description"
-                />
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <TextEditor
+                    data={field?.value}
+                    onChange={(prev, editor) => {
+                      const newData = editor?.getData();
+                      field.onChange(newData);
+                    }}
+                  />
+                  {error && (
+                    <span className="text-red-500 text-sm">
+                      {error.message}
+                    </span>
+                  )}
+                </>
               )}
             />
             {errors.fullDescription && (
@@ -373,7 +382,10 @@ const Services = () => {
               name="bannerImage"
               control={control}
               render={({ field }) => (
-                <Input {...field} placeholder="Banner image URL" />
+                <FileUploader
+                  value={field.value}
+                  onChange={(e) => field.onChange(e)}
+                />
               )}
             />
           </div>
@@ -385,7 +397,10 @@ const Services = () => {
               name="thumbnail"
               control={control}
               render={({ field }) => (
-                <Input {...field} placeholder="Thumbnail URL" />
+                <FileUploader
+                  value={field.value}
+                  onChange={(e) => field.onChange(e)}
+                />
               )}
             />
           </div>
@@ -397,7 +412,10 @@ const Services = () => {
               name="videoUrl"
               control={control}
               render={({ field }) => (
-                <Input {...field} placeholder="Video URL" />
+                <FileUploader
+                  value={field.value}
+                  onChange={(e) => field.onChange(e)}
+                />
               )}
             />
           </div>

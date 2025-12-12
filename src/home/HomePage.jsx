@@ -283,7 +283,7 @@ const HomePage = () => {
               alt="Solar Panels"
               className="w-full h-auto rounded-xl shadow-lg"
             />
-            <div className="hidden md:block absolute right-10 -bottom-8 bg-green-600 text-white p-6 rounded-xl max-w-xs shadow-xl">
+            {/* <div className="hidden md:block absolute right-10 -bottom-8 bg-green-600 text-white p-6 rounded-xl max-w-xs shadow-xl">
               <h3 className="text-xl font-semibold mb-2">
                 Fostering Growth Of Solar Energy!
               </h3>
@@ -291,14 +291,10 @@ const HomePage = () => {
                 Benefiting from 20 years experience in the solar material
                 procurement sector and PV manufacturing.
               </p>
-            </div>
+            </div> */}
           </div>
 
           <div className="space-y-4">
-            <p className="text-green-600 font-semibold">
-              A World Wide Distributor Of Solar Supplies
-            </p>
-
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-snug">
               Smart Compliance for a Sustainable Future.
             </h2>
@@ -334,9 +330,6 @@ const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-6 items-center">
             <div className="flex flex-col">
               <div className="max-w-2xl">
-                <p className="text-green-400 font-medium mb-3">
-                  Making Tomorrow Different Today.
-                </p>
                 <h2 className="text-3xl md:text-4xl font-bold leading-tight">
                   Our Comprehensive EPR and Waste Management Solutions
                 </h2>

@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { logoutUser } from "../toolkit/slices/authSlice";
 import { useToast } from "../components/ToastProvider";
+import { List, Star } from "lucide-react";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -12,7 +13,8 @@ const AdminLayout = () => {
     { title: "Dashboard", icon: "📊", path: "dashboard" },
     { title: "Category", icon: "👤", path: "category" },
     { title: "Blogs", icon: "🧾", path: "blogs" },
-    { title: "Settings", icon: "⚙️", path: "setting" },
+    { title: "Rating", icon: <Star/>, path: "rating" },
+    { title: "Enquiry", icon: <List/>, path: "enquiry" },
   ];
 
   const handleLogout = () => {

@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import logo from "../assets/logo.png";
-import { megaMenu } from "../navData";
+import { formatMegaMenu } from "../navData";
 import { FiSearch, FiX } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Header = () => {
+  const serviceList = useSelector((state) => state.service.allServiceList);
+  const blogList = useSelector((state) => state.blogs.blogList);
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openCategory, setOpenCategory] = useState(null);
@@ -32,7 +35,7 @@ const Header = () => {
   }, []);
 
   const handleNavHover = (item) => {
-    if (!megaMenu[item]) {
+    if (!formatMegaMenu(serviceList, blogList)[item]) {
       setOpenMenu(null);
       return;
     }
@@ -82,9 +85,9 @@ const Header = () => {
       >
         <div className="container mx-auto px-4">
           <div className="w-full flex items-center justify-between py-4">
-            <a href="/" alt="home_page">
+            <Link href="/" alt="home_page">
               <img src={logo} alt="logo" className="h-10 w-auto" />
-            </a>
+            </Link>
 
             <div className="flex items-center justify-end gap-4">
               <nav className="hidden lg:flex items-center gap-8 relative">
@@ -97,7 +100,6 @@ const Header = () => {
                   >
                     <span className="cursor-pointer font-semibold hover:text-green-600 flex items-center gap-1">
                       {item}
-                      {/* {megaMenu[item] && <span className="text-sm">▾</span>} */}
                     </span>
                   </div>
                 ))}
@@ -132,7 +134,9 @@ const Header = () => {
                   >
                     {/* LEFT SIDE TITLES */}
                     <div className="w-1/3 border-r border-gray-200 overflow-y-auto py-4">
-                      {megaMenu[openMenu].categories.map((cat, index) => (
+                      {formatMegaMenu(serviceList, blogList)[
+                        openMenu
+                      ].categories.map((cat, index) => (
                         <div
                           key={index}
                           className={`px-4 py-3 cursor-pointer font-medium ${
@@ -148,15 +152,19 @@ const Header = () => {
                     </div>
 
                     <div className="w-2/3 p-6 overflow-y-auto grid grid-cols-3 gap-4">
-                      {megaMenu[openMenu].categories[
-                        activeCategoryIndex
-                      ].items.map((sub, i) => (
+                      {formatMegaMenu(serviceList, blogList)[
+                        openMenu
+                      ].categories[activeCategoryIndex].items.map((sub, i) => (
                         <Link
-                          to={"service"}
+                          to={
+                            sub?.type === "service"
+                              ? `service/${sub?.id}/${sub?.slug}`
+                              : `blog/${sub?.id}/${sub?.slug}`
+                          }
                           key={i}
                           className="text-gray-700 hover:text-green-600"
                         >
-                          {sub}
+                          {sub?.name}
                         </Link>
                       ))}
                     </div>
@@ -218,7 +226,7 @@ const Header = () => {
         </div>
 
         <div className="px-4 py-4 flex flex-col gap-3">
-          {Object.keys(megaMenu).map((menu, i) => (
+          {Object.keys(formatMegaMenu(serviceList, blogList)).map((menu, i) => (
             <div key={i}>
               {/* PARENT ITEM */}
               <div
@@ -236,23 +244,25 @@ const Header = () => {
               {/* COLLAPSIBLE CHILDREN */}
               {openCategory === menu && (
                 <div className="pl-4 py-2 flex flex-col gap-4">
-                  {megaMenu[menu].categories.map((cat, j) => (
-                    <div key={j}>
-                      <p className="text-green-600 font-semibold">
-                        {cat.title}
-                      </p>
-                      <ul className="pl-3 mt-1 flex flex-col gap-1">
-                        {cat.items.map((item, k) => (
-                          <li
-                            key={k}
-                            className="text-gray-600 hover:text-green-600 cursor-pointer"
-                          >
-                            <Link to={"service"}>{item}</Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                  {formatMegaMenu(serviceList, blogList)[menu].categories.map(
+                    (cat, j) => (
+                      <div key={j}>
+                        <p className="text-green-600 font-semibold">
+                          {cat.title}
+                        </p>
+                        <ul className="pl-3 mt-1 flex flex-col gap-1">
+                          {cat.items.map((item, k) => (
+                            <li
+                              key={k}
+                              className="text-gray-600 hover:text-green-600 cursor-pointer"
+                            >
+                              <Link to={"service"}>{item}</Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )
+                  )}
                 </div>
               )}
             </div>

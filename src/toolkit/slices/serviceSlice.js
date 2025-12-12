@@ -132,7 +132,9 @@ export const getServiceListBySubCategoryId = createAsyncThunk(
   "getServiceListBySubCategoryId",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/services/subcategory/${id}/services`);
+      const response = await api.get(
+        `/api/services/subcategory/${id}/services`
+      );
       return response.data;
     } catch (err) {
       return rejectWithValue(
@@ -183,6 +185,18 @@ export const deleteService = createAsyncThunk(
   }
 );
 
+export const getAllServices = createAsyncThunk(
+  "getAllServices",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/services`);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err?.response?.data?.message);
+    }
+  }
+);
+
 const serviceSlice = createSlice({
   name: "service",
   initialState: {
@@ -190,6 +204,7 @@ const serviceSlice = createSlice({
     categoryList: [],
     subcategoryList: [],
     serviceList: [],
+    allServiceList: [],
   },
   extraReducers: (builder) => {
     builder.addCase(getAllCategories.pending, (state) => {
@@ -228,6 +243,17 @@ const serviceSlice = createSlice({
       }
     );
     builder.addCase(getServiceListBySubCategoryId.rejected, (state) => {
+      state.loading = "rejected";
+    });
+
+    builder.addCase(getAllServices.pending, (state) => {
+      state.loading = "pending";
+    });
+    builder.addCase(getAllServices.fulfilled, (state, action) => {
+      state.loading = "success";
+      state.allServiceList = action.payload;
+    });
+    builder.addCase(getAllServices.rejected, (state) => {
       state.loading = "rejected";
     });
   },

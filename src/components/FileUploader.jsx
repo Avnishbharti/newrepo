@@ -1,160 +1,264 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
+import { api } from "../httpcommon";
+
 
 const FileUploader = ({
-  uploadUrl = "/api/images/upload",
-  value = [],     // array of uploaded files [{id,name,url}]
-  onChange = () => {},
-  multiple = true,
-  accept = "*",   // accept all file types by default
+  value,
+  onChange,
+  label,
+  isRequired = false,
+  errorMessage,
+  uploadingType = "single",
 }) => {
-  const fileRef = useRef();
+  const dropRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [files, setFiles] = useState([]);
-  const [previewImage, setPreviewImage] = useState(null);
+  const [statuses, setStatuses] = useState({}); // Track status for each file
 
-  // Sync files from parent
-useEffect(() => {
-  if (Array.isArray(value)) {
-    // Only update if different
-    const isSame =
-      JSON.stringify(value) === JSON.stringify(files);
 
-    if (!isSame) {
-      setFiles(value);
+  const allowedTypes = [
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/gif",
+    "application/pdf",
+    "text/plain",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel", // .xls & sometimes .csv
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+    "text/csv",
+    "application/csv",
+  ];
+
+  const uploadFile = async (selectedFile, index) => {
+    setStatuses((prev) => ({ ...prev, [index]: "uploading" }));
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const response = await api.post(
+        "/leadService/api/v1/upload/uploadimageToFileSystem",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const url = response?.data;
+      if (response?.status === 200 && url) {
+        setStatuses((prev) => ({ ...prev, [index]: "success" }));
+        // Update the value array with the new URL
+        onChange(uploadingType === "multiple" ? [...(value || []), url] : url);
+      } else {
+        console.warn("Unexpected response structure:", response?.data);
+        setStatuses((prev) => ({ ...prev, [index]: "error" }));
+      }
+    } catch (error) {
+      console.error("Upload failed for", selectedFile.name, error);
+      setStatuses((prev) => ({ ...prev, [index]: "error" }));
     }
-  }
-}, [value]);
+  };
 
+  const handleFile = (selectedFiles) => {
+    const newFiles = Array.from(selectedFiles).filter((file) =>
+      allowedTypes.includes(file.type)
+    );
 
-  // Upload Files to API
-  const handleUpload = async (event) => {
-    const selectedFiles = event.target.files;
-    if (!selectedFiles.length) return;
-
-    const uploadedList = [];
-
-    for (let file of selectedFiles) {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch(uploadUrl, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json(); 
-      // Ensure response contains: { id, url, name }
-
-      uploadedList.push({
-        id: data.id,
-        url: data.url,
-        name: data.name,
-      });
+    if (newFiles.length === 0) {
+      setStatuses((prev) => ({ ...prev, [files.length]: "error" }));
+      return;
     }
 
-    const updated = [...files, ...uploadedList];
-    setFiles(updated);
-    onChange(updated); // send to parent
+    if (uploadingType === "multiple") {
+      setFiles((prev) => [...prev, ...newFiles]);
+      newFiles.forEach((file, index) => {
+        uploadFile(file, files.length + index);
+      });
+    } else {
+      setFiles([newFiles[0]]);
+      uploadFile(newFiles[0], 0);
+    }
   };
 
-  const removeFile = (id) => {
-    const updated = files.filter((f) => f.id !== id);
-    setFiles(updated);
-    onChange(updated);
+  const handleFileInputChange = (e) => {
+    if (e.target.files.length) {
+      handleFile(e.target.files);
+      e.target.value = null;
+    }
   };
 
-  const isImage = (name) => {
-    return /\.(jpg|jpeg|png|gif|webp)$/i.test(name);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) {
+      handleFile(e.dataTransfer.files);
+    }
+    dropRef.current.classList.remove("highlight");
   };
+
+  const handlePaste = (e) => {
+    if (e.clipboardData?.files?.length) {
+      handleFile(e.clipboardData.files);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    dropRef.current.classList.add("highlight");
+  };
+
+  const handleDragLeave = () => {
+    dropRef.current.classList.remove("highlight");
+  };
+
+  const handleClickDropZone = () => {
+    if (
+      uploadingType !== "multiple" &&
+      files.length > 0 &&
+      statuses[0] === "success"
+    ) {
+      return; // Prevent clicking if single file is already uploaded successfully
+    }
+    fileInputRef.current.click();
+  };
+
+  const handleClearFile = (index) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setStatuses((prev) => {
+      const newStatuses = { ...prev };
+      delete newStatuses[index];
+      // Reindex statuses
+      const reindexedStatuses = {};
+      Object.keys(newStatuses)
+        .sort()
+        .forEach((key, i) => {
+          reindexedStatuses[i] = newStatuses[key];
+        });
+      return reindexedStatuses;
+    });
+    // Update value by removing the URL at the specific index
+    if (uploadingType === "multiple") {
+      const newValue = (value || []).filter((_, i) => i !== index);
+      onChange(newValue.length > 0 ? newValue : []);
+    } else {
+      onChange(null);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("paste", handlePaste);
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+    };
+  }, []);
 
   return (
-    <>
-      {/* Upload Box */}
+    <div className="w-full">
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept={allowedTypes.join(",")}
+        style={{ display: "none" }}
+        onChange={handleFileInputChange}
+        multiple={uploadingType === "multiple"}
+      />
+
       <div
-        onClick={() => fileRef.current.click()}
-        className="border-2 border-dashed border-gray-400 rounded-xl p-6 cursor-pointer text-center hover:bg-gray-50"
+        ref={dropRef}
+        onClick={handleClickDropZone}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`w-full min-h-[52px] border-2 rounded-lg mt-1 border-gray-600 dark:text-white flex flex-col items-start justify-center px-2 cursor-pointer transition-colors ${
+          uploadingType !== "multiple" &&
+          files.length > 0 &&
+          statuses[0] === "success"
+            ? "cursor-not-allowed opacity-70"
+            : ""
+        }`}
       >
-        <p className="text-gray-600">Click to upload files</p>
-        <input
-          type="file"
-          multiple={multiple}
-          accept={accept}
-          ref={fileRef}
-          className="hidden"
-          onChange={handleUpload}
-        />
-      </div>
-
-      {/* Uploaded File List */}
-      <div className="mt-4 space-y-3">
-        {files.map((file) => (
-          <div
-            key={file.id}
-            className="flex items-center justify-between p-3 border rounded-lg bg-gray-50"
+        {label && (
+          <p className="text-sm">
+            {label}
+            {isRequired && <span className="text-red-500">*</span>}
+          </p>
+        )}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className={`bg-blue-500 text-white text-tiny px-2 py-[3px] rounded hover:bg-blue-600 ${
+              uploadingType !== "multiple" &&
+              files.length > 0 &&
+              statuses[0] === "success"
+                ? "hidden"
+                : ""
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              fileInputRef.current.click();
+            }}
           >
-            <div className="flex items-center gap-3">
-              {isImage(file.name) ? (
-                <img
-                  src={file.url}
-                  alt={file.name}
-                  className="w-12 h-12 object-cover rounded"
-                />
-              ) : (
-                <div className="w-12 h-12 bg-gray-300 rounded flex items-center justify-center text-sm">
-                  {file.name.split(".").pop().toUpperCase()}
-                </div>
-              )}
+            Choose
+          </button>
+          <p className="text-tiny text-gray-400">
+            {uploadingType === "multiple" &&
+            files.length > 0 &&
+            Object.values(statuses).includes("success")
+              ? "Files uploaded. Add more or replace."
+              : uploadingType === "multiple"
+                ? "or Drag & Drop Files Here, or Paste"
+                : files.length > 0 && statuses[0] === "success"
+                  ? "File uploaded. Click to replace."
+                  : "or Drag & Drop File Here, or Paste"}
+          </p>
+        </div>
+      </div>
+      {errorMessage && <p className="text-red-500 text-xs">{errorMessage}</p>}
 
-              <div>
-                <p className="font-medium">{file.name}</p>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              {/* Preview button only for images */}
-              {isImage(file.name) && (
-                <button
-                  onClick={() => setPreviewImage(file.url)}
-                  className="px-3 py-1 bg-blue-600 text-white rounded cursor-pointer"
-                >
-                  Preview
-                </button>
-              )}
-
-              <button
-                onClick={() => removeFile(file.id)}
-                className="px-3 py-1 bg-red-600 text-white rounded cursor-pointer"
+      {files.length > 0 && (
+        <div className="mt-4 flex flex-col gap-2">
+          {files.map((file, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <p
+                className={`${
+                  statuses[index] === "success"
+                    ? "text-green-600"
+                    : "text-gray-800"
+                } text-tiny`}
               >
-                Remove
+                {file.name} ({Math.round(file.size / 1024)} KB)
+                {statuses[index] === "success" && value?.[index] && (
+                  <>
+                    {" "}
+                    –{" "}
+                    <a
+                      href={value[index]}
+                      className="underline"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View
+                    </a>
+                  </>
+                )}
+                {statuses[index] === "uploading" && " – Uploading..."}
+                {statuses[index] === "error" && " – Failed"}
+              </p>
+              <button
+                type="button"
+                onClick={() => handleClearFile(index)}
+                className="text-red-500 text-tiny hover:text-red-700"
+              >
+                Clear
               </button>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Image Preview Modal */}
-      {previewImage && (
-        <div
-          onClick={() => setPreviewImage(null)}
-          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 cursor-pointer"
-        >
-          <img
-            src={previewImage}
-            className="max-w-[90%] max-h-[90%] rounded-lg shadow-lg"
-          />
+          ))}
         </div>
       )}
-    </>
+    </div>
   );
 };
 
 export default FileUploader;
-
-
-
-//  <FileUploader
-//         uploadUrl="/api/images/upload"
-//         value={uploadedFiles}
-//         onChange={setUploadedFiles}
-//         multiple={true}
-//         accept="*"
-//       />

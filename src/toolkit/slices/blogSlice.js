@@ -3,9 +3,9 @@ import { api } from "../../httpcommon";
 
 export const getBlogList = createAsyncThunk(
   "getBlogList",
-  async (userId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/blogs?userId=${userId}`);
+      const response = await api.get(`/api/blogs`);
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response.data.message);
@@ -49,11 +49,24 @@ export const deleteBlog = createAsyncThunk(
   }
 );
 
+export const getBlogDetailById = createAsyncThunk(
+  "getBlogDetailById",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/blogs/${id}`);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data.message);
+    }
+  }
+);
+
 const blogSlice = createSlice({
   name: "blogs",
   initialState: {
     loading: "",
     blogList: [],
+    blogDetail: {},
   },
   extraReducers: (builder) => {
     builder.addCase(getBlogList.pending, (state) => {
@@ -64,6 +77,17 @@ const blogSlice = createSlice({
       state.blogList = action.payload;
     });
     builder.addCase(getBlogList.rejected, (state) => {
+      state.loading = "error";
+    });
+
+    builder.addCase(getBlogDetailById.pending, (state) => {
+      state.loading = "pending";
+    });
+    builder.addCase(getBlogDetailById.fulfilled, (state, action) => {
+      state.loading = "success";
+      state.blogDetail = action.payload;
+    });
+    builder.addCase(getBlogDetailById.rejected, (state) => {
       state.loading = "error";
     });
   },

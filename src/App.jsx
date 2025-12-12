@@ -14,6 +14,9 @@ import ProtectedRoute from "./ProtectedRoute";
 import AboutUs from "./aboutus/AboutUs";
 import ContactUs from "./contactus/ContactUs";
 import Setting from "./admin/setting/Setting";
+import Rating from "./admin/rating/Rating";
+import BlogDetail from "./blog/BlogDetail";
+import Enquiry from "./admin/enquiry/Enquiry";
 
 const App = () => {
   return (
@@ -21,7 +24,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
-          <Route path="service" element={<Service />} />
+          <Route path="service/:serviceId/:serviceSlug" element={<Service />} />
+          <Route path="blog/:blogId/:blogSlug" element={<BlogDetail />} />
           <Route path="aboutus" element={<AboutUs />} />
           <Route path="contactus" element={<ContactUs />} />
         </Route>
@@ -75,10 +79,18 @@ const App = () => {
             }
           />
           <Route
-            path="setting"
+            path="rating"
             element={
               <ProtectedRoute>
-                <Setting />
+                <Rating />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="enquiry"
+            element={
+              <ProtectedRoute>
+                <Enquiry />
               </ProtectedRoute>
             }
           />
