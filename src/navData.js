@@ -56,51 +56,53 @@ export function formatMegaMenu(servicesData, blogsData) {
   const blogGroup = {};
 
   // ----------- SERVICES API -----------
-  servicesData.forEach((item) => {
-    const category = item.categoryName;
-    const serviceName = item.title;
-    const serviceSlug = item?.slug;
-    const type = "service";
-    const id = item?.id;
+  servicesData?.length > 0 &&
+    servicesData?.forEach((item) => {
+      const category = item.categoryName;
+      const serviceName = item.title;
+      const serviceSlug = item?.slug;
+      const type = "service";
+      const id = item?.id;
 
-    if (!serviceGroup[category]) {
-      serviceGroup[category] = [];
-    }
+      if (!serviceGroup[category]) {
+        serviceGroup[category] = [];
+      }
 
-    serviceGroup[category].push({
-      name: serviceName,
-      slug: serviceSlug,
-      type,
-      id,
+      serviceGroup[category].push({
+        name: serviceName,
+        slug: serviceSlug,
+        type,
+        id,
+      });
     });
-  });
 
   // ----------- BLOGS API -----------
-  blogsData.forEach((item) => {
-    const category = item.categoryName;
-    const blogTitle = item.title;
-    const blogSlug = item?.slug;
-    const type = "blog";
-    const id = item?.id;
+  blogsData?.length > 0 &&
+    blogsData?.forEach((item) => {
+      const category = item.categoryName;
+      const blogTitle = item.title;
+      const blogSlug = item?.slug;
+      const type = "blog";
+      const id = item?.id;
 
-    if (!blogGroup[category]) {
-      blogGroup[category] = [];
-    }
+      if (!blogGroup[category]) {
+        blogGroup[category] = [];
+      }
 
-    blogGroup[category].push({ name: blogTitle, slug: blogSlug, type, id });
-  });
+      blogGroup[category].push({ name: blogTitle, slug: blogSlug, type, id });
+    });
 
   // ----------- Build Final Structure -----------
   return {
     Blogs: {
-      categories: Object.keys(blogGroup).map((category) => ({
+      categories: Object?.keys(blogGroup)?.map((category) => ({
         title: category,
         items: blogGroup[category],
       })),
     },
 
     Services: {
-      categories: Object.keys(serviceGroup).map((category) => ({
+      categories: Object?.keys(serviceGroup)?.map((category) => ({
         title: category,
         items: serviceGroup[category],
       })),
