@@ -18,14 +18,8 @@ const Service = () => {
 
   return (
     <>
-      <section
-        style={{
-          backgroundImage: `url(${bgImg})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <section  className="bg-gradient-to-br from-[#0E1F3A] via-[#1B3A6B] to-[#0E1F3A]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
             {/* LEFT SECTION */}
             <div className="w-full">
@@ -68,11 +62,10 @@ const Service = () => {
                   Limited Time Offer
                 </div>
 
-                <h2 className="text-center text-lg sm:text-2xl font-semibold text-gray-900 mb-6 break-words hyphens-auto pt-2 sm:pt-0">
+                <h2 className="text-center text-lg sm:text-2xl font-semibold text-gray-800 mb-6 break-words hyphens-auto pt-2 sm:pt-0">
                   Get Free Expert Consultation
                 </h2>
 
-                {/* Form */}
                 <EnquiryForm />
               </div>
             </div>
@@ -85,32 +78,26 @@ const Service = () => {
                 {
                   text: "What Sets Us Apart",
                   icon: (
-                    <BsShieldCheck className="w-3 h-3 sm:w-4 sm:h-4 text-green-700 font-bold flex-shrink-0" />
+                    <BsShieldCheck className="w-3 h-3 sm:w-4 sm:h-4 text-green-700 flex-shrink-0" />
                   ),
                 },
                 {
                   text: "MCA Experts",
-                  icon: (
-                    <span className="text-green-700 font-medium">500+ </span>
-                  ),
+                  icon: <span className="text-green-700">500+</span>,
                 },
                 {
-                  text: " Reviews",
-                  icon: (
-                    <span className="text-green-700 font-medium">10,000+</span>
-                  ),
+                  text: "Reviews",
+                  icon: <span className="text-green-700">10,000+</span>,
                 },
                 {
-                  text: " Monthly Clients",
-                  icon: (
-                    <span className="text-green-700 font-medium">2500+ </span>
-                  ),
+                  text: "Monthly Clients",
+                  icon: <span className="text-green-700">2500+</span>,
                 },
                 { text: "Serving India Nationwide" },
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-1 sm:gap-2 flex-shrink-0 px-2 py-1 bg-gray-200 rounded-full text-xs sm:text-sm"
+                  className="flex items-center gap-1 sm:gap-2 flex-shrink-0 px-2 py-1 bg-gray-100 rounded-full text-xs sm:text-sm"
                 >
                   {item.icon && item.icon}
                   <span className="font-semibold text-gray-600 break-words hyphens-auto">
@@ -122,6 +109,7 @@ const Service = () => {
           </div>
         </div>
       </section>
+
       <section>{serviceDetail?.fullDescription}</section>
       <ServiceTableOfContent />
     </>

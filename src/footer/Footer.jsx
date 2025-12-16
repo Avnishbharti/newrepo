@@ -69,7 +69,7 @@ const Footer = () => {
         </div>
 
         {/* Support */}
-        <div>
+        {/* <div>
           <h3 className="text-lg font-semibold mb-4">Support</h3>
           <ul className="space-y-2 text-gray-400">
             <li className="hover:text-white cursor-pointer">
@@ -79,17 +79,16 @@ const Footer = () => {
             <li className="hover:text-white cursor-pointer">Delivery Tips</li>
             <li className="hover:text-white cursor-pointer">Returns</li>
           </ul>
-        </div>
+        </div> */}
 
         {/* Products Catalogue */}
-        <div>
+        {/* <div>
           <h3 className="text-lg font-semibold mb-4">Products Catalogue</h3>
 
           <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg flex items-center gap-3 mb-6 transition">
             <FaFilePdf /> Download PDF
           </button>
 
-          {/* Social Icons */}
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-[#141414] flex items-center justify-center border border-gray-700 hover:border-green-500 hover:text-green-500 cursor-pointer">
               <FaFacebookF />
@@ -103,7 +102,7 @@ const Footer = () => {
               <FaTwitter />
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* BOTTOM BAR */}
