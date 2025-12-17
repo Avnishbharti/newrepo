@@ -1,24 +1,25 @@
-import { BsShieldCheck, BsWhatsapp } from "react-icons/bs";
-import bgImg from "../assets/serviceimg.jpg";
-import { useEffect, useState } from "react";
+import { BsShieldCheck } from "react-icons/bs";
+import { useEffect } from "react";
 import ServiceTableOfContent from "./ServiceTableOfContent";
 import EnquiryForm from "../components/EnquiryForm";
 import { useDispatch, useSelector } from "react-redux";
-import { getServiceDetailById } from "../toolkit/slices/serviceSlice";
+import { getClientServiceDetailBySlug } from "../toolkit/slices/serviceSlice";
 import { useParams } from "react-router-dom";
 
 const Service = () => {
-  const { serviceId } = useParams();
+  const { serviceSlug } = useParams();
   const dispatch = useDispatch();
-  const serviceDetail = useSelector((state) => state.service.serviceDetail);
+  const serviceDetail = useSelector(
+    (state) => state.service.clientServiceDetail
+  );
 
   useEffect(() => {
-    dispatch(getServiceDetailById(serviceId));
-  }, [dispatch, serviceId]);
+    dispatch(getClientServiceDetailBySlug(serviceSlug));
+  }, [dispatch, serviceSlug]);
 
   return (
     <>
-      <section  className="bg-gradient-to-br from-[#0E1F3A] via-[#1B3A6B] to-[#0E1F3A]">
+      <section className="bg-gradient-to-br from-[#0E1F3A] via-[#1B3A6B] to-[#0E1F3A]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
             {/* LEFT SECTION */}
@@ -26,32 +27,12 @@ const Service = () => {
               <h1 className="text-xl sm:text-4xl font-bold text-white leading-snug break-words">
                 {serviceDetail?.title}
               </h1>
-
-              <p className="text-white mt-4 text-sm sm:text-lg break-words hyphens-auto">
-                {serviceDetail?.shortDescription}
-              </p>
-
-              <ul className="mt-6 space-y-3">
-                {[
-                  "Udyam Registration Support",
-                  "Loan & Subsidy Application Help",
-                  "Expert Registration Assistance",
-                  "Fast Online MSME Registration",
-                  "Trusted by 20,000+ Startups",
-                ].map((item, index) => (
-                  <li
-                    key={index}
-                    className="flex items-start gap-2 sm:gap-3 break-words hyphens-auto"
-                  >
-                    <span className="text-green-600 text-xl flex-shrink-0 mt-0.5">
-                      ✔
-                    </span>
-                    <span className="text-white text-xs sm:text-base break-words hyphens-auto">
-                      {item}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <div
+                className="text-white mt-4 text-sm sm:text-lg break-words hyphens-auto"
+                dangerouslySetInnerHTML={{
+                  __html: serviceDetail?.shortDescription,
+                }}
+              />
             </div>
 
             {/* RIGHT FORM SECTION */}
@@ -110,7 +91,11 @@ const Service = () => {
         </div>
       </section>
 
-      <section>{serviceDetail?.fullDescription}</section>
+      <section>
+        <div
+          dangerouslySetInnerHTML={{ __html: serviceDetail?.fullDescription }}
+        />
+      </section>
       <ServiceTableOfContent />
     </>
   );

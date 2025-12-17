@@ -6,8 +6,8 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const Header = () => {
-  const serviceList = useSelector((state) => state.service.allServiceList);
-  const blogList = useSelector((state) => state.blogs.blogList);
+  const serviceList = useSelector((state) => state.service.clientServiceList);
+  const blogList = useSelector((state) => state.blogs.clientBlogList);
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openCategory, setOpenCategory] = useState(null);
@@ -158,7 +158,7 @@ const Header = () => {
                         <Link
                           to={
                             sub?.type === "service"
-                              ? `service/${sub?.id}/${sub?.slug}`
+                              ? `/${sub?.slug}`
                               : `blog/${sub?.id}/${sub?.slug}`
                           }
                           key={i}

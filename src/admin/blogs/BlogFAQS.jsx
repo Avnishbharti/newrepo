@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Table from "../../components/Table";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addTableOfContent,
-  delteTableOfContent,
-  getServiceTableContentList,
-  updateServiceTableOfContent,
+  addServiceFAQ,
+  deleteServiceFaqs,
+  getAllServiceFAQS,
+  updateServiceFaqs,
 } from "../../toolkit/slices/serviceSlice";
 import { useParams } from "react-router-dom";
 import { useToast } from "../../components/ToastProvider";
@@ -17,30 +17,34 @@ import Dropdown from "../../components/Dropdown";
 import PopConfirm from "../../components/PopConfirm";
 import { ArrowLeft, EllipsisVertical } from "lucide-react";
 import TextEditor from "../../components/TextEditor";
+import {
+    addBlogFAQS,
+  deleteBlogFAQ,
+  getBlogFaqsList,
+  updateBlogFAQS,
+} from "../../toolkit/slices/blogSlice";
 
-const ServiceTableOfContentss = () => {
-  const { userId, serviceId } = useParams();
+const BlogFAQS = () => {
+  const { userId, blogId } = useParams();
   const { showToast } = useToast();
   const dispatch = useDispatch();
-  const data = useSelector((state) => state.service.serviceTableOfContentList);
+  const data = useSelector((state) => state.service.serviceFaqsList);
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState({});
-  const [rowData, setRowData] = useState(null);
   const [descModal, setDescModal] = useState(false);
   const initialForm = {
-    tabName: "",
     title: "",
     description: "",
-    displayOrder: "",
     displayStatus: 1,
   };
   const [formData, setFormData] = useState(initialForm);
   const [errors, setErrors] = useState({});
+  const [rowData, setRowData] = useState(null);
 
   useEffect(() => {
-    dispatch(getServiceTableContentList({ serviceId }));
-  }, [dispatch, serviceId]);
+    dispatch(getBlogFaqsList(blogId));
+  }, [dispatch, blogId]);
 
   const filteredData = useMemo(() => {
     if (!search) return data;
@@ -56,22 +60,25 @@ const ServiceTableOfContentss = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.tabName.trim()) newErrors.tabName = "Tab name is required";
-    if (!formData.title.trim()) newErrors.title = "Title is required";
+
+    if (!formData.question.trim()) newErrors.question = "Question is required";
+
+    if (!formData.answer.trim()) newErrors.answer = "description is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleDelete = (rowData) => {
-    dispatch(delteTableOfContent({ id: rowData?.id, userId }))
+    dispatch(deleteBlogFAQ({ faqId: rowData?.id, blogId, userId }))
       .then((resp) => {
         if (resp.meta.requestStatus === "fulfilled") {
           showToast({
             title: "Success!",
-            description: "Tab content has been deleted successfully !.",
+            description: "Description has been deleted successfully !.",
             status: "success",
           });
-          dispatch(getServiceTableContentList({ serviceId }));
+          dispatch(getBlogFaqsList(blogId));
         } else {
           showToast({
             title: resp?.payload?.status,
@@ -92,34 +99,32 @@ const ServiceTableOfContentss = () => {
   const handleEdit = (item) => {
     setRowData(item);
     setFormData({
-      tabName: item.tabName,
-      title: item.title,
-      description: item.description,
-      displayOrder: item.displayOrder,
-      displayStatus: item.displayStatus,
+      question: item.question,
+      answer: item.answer,
+      displayOrder: Number(item.displayOrder || 0),
+      displayStatus: Number(item.displayStatus || 1),
     });
+    setOpenModal(true);
   };
 
-  const onSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
     const payload = { ...formData, serviceId };
-
     if (rowData) {
       dispatch(
-        updateServiceTableOfContent({ id: rowData?.id, userId, data: payload })
+        updateBlogFAQS({ faqId: rowData?.id, blogId, userId, data: payload })
       )
         .then((resp) => {
           if (resp.meta.requestStatus === "fulfilled") {
             showToast({
               title: "Success!",
-              description: "Tab content has been updated successfully !.",
+              description: "Blog FAQ has been updated successfully !.",
               status: "success",
             });
             setOpenModal(false);
             setRowData(null);
-            dispatch(getServiceTableContentList({ serviceId }));
+            dispatch(getBlogFaqsList(blogId));
           } else {
             showToast({
               title: resp?.payload?.status,
@@ -131,21 +136,21 @@ const ServiceTableOfContentss = () => {
         .catch(() => {
           showToast({
             title: "Something went wrong !.",
-            description: "Failed to update service.",
+            description: "Failed to update service FAQ.",
             status: "error",
           });
         });
     } else {
-      dispatch(addTableOfContent({ userId, data: payload }))
+      dispatch(addBlogFAQS({ blogId,userId, data: payload }))
         .then((resp) => {
           if (resp.meta.requestStatus === "fulfilled") {
             showToast({
               title: "Success!",
-              description: "Tab content  has been added successfully.",
+              description: "Blog FAQ has been added successfully.",
               status: "success",
             });
             setOpenModal(false);
-            dispatch(getServiceTableContentList({ serviceId }));
+            dispatch(getBlogFaqsList(blogId));
           } else {
             showToast({
               title: resp?.payload?.status,
@@ -166,18 +171,13 @@ const ServiceTableOfContentss = () => {
 
   const dummyColumns = [
     {
-      title: "Tab name",
-      dataIndex: "tabName",
-      render: (value) => <p className="text-wrap">{value}</p>,
-    },
-    {
-      title: "Title",
-      dataIndex: "title",
+      title: "Question",
+      dataIndex: "question",
       render: (value, record) => <p className="font-medium">{value}</p>,
     },
     {
-      title: "Description",
-      dataIndex: "description",
+      title: "Answer",
+      dataIndex: "answer",
       render: (value, record) => (
         <Button
           onClick={() => {
@@ -237,7 +237,7 @@ const ServiceTableOfContentss = () => {
           onChange={(e) => setSearch(e.target.value)}
           wrapperClassName="w-80"
         />
-        <Button onClick={() => setOpenModal(true)}>Add tab</Button>
+        <Button onClick={() => setOpenModal(true)}>Add faq</Button>
       </div>
     );
   }, [search]);
@@ -246,12 +246,13 @@ const ServiceTableOfContentss = () => {
     <>
       {!openModal ? (
         <>
-          <h2 className="text-lg font-semibold">Service table of content</h2>
+          <h2 className="text-lg font-semibold">Blog FAQ</h2>
           <Table
             columns={dummyColumns}
             dataSource={filteredData}
             topContent={topContent}
             className="w-full"
+            scroll={{ y: "80vh", x: 1300 }}
           />
         </>
       ) : (
@@ -264,33 +265,17 @@ const ServiceTableOfContentss = () => {
               onClick={() => setOpenModal(false)}
             />
             <h2 className="text-lg font-semibold">
-              {rowData
-                ? "Update service table of content"
-                : "Create service table of content"}
+              {rowData ? "Update service faq's" : "Create service faq's"}
             </h2>
           </div>
           <form
-            onSubmit={onSubmit}
-            className="grid grid-cols-2 gap-6 mb-6 px-2 py-4"
+            onSubmit={handleSubmit}
+            className="grid grid-cols-2 gap-6 mb-6 px-4 py-4"
           >
-            {/* Tab Name */}
-            <div className="flex flex-col">
+            {/* Question */}
+            <div className="col-span-2">
               <label>
-                Tab Name <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.tabName}
-                onChange={(e) => handleChange("tabName", e.target.value)}
-              />
-              {errors.tabName && (
-                <p className="text-red-600 text-sm">{errors.tabName}</p>
-              )}
-            </div>
-
-            {/* Title */}
-            <div className="flex flex-col">
-              <label>
-                Title <span className="text-red-500">*</span>
+                Question <span className="text-red-500">*</span>
               </label>
               <Input
                 value={formData.title}
@@ -301,15 +286,20 @@ const ServiceTableOfContentss = () => {
               )}
             </div>
 
-            {/* Description */}
+            {/* Answer */}
             <div className="col-span-2">
-              <label>Description</label>
+              <label>
+                Description <span className="text-red-500">*</span>
+              </label>
               <TextEditor
                 data={formData.description}
                 onChange={(prev, editor) =>
                   handleChange("description", editor.getData())
                 }
               />
+              {errors.description && (
+                <p className="text-red-600 text-sm">{errors.description}</p>
+              )}
             </div>
 
             {/* Display Status */}
@@ -317,54 +307,30 @@ const ServiceTableOfContentss = () => {
               <label>Display Status</label>
               <Select
                 value={formData.displayStatus}
+                onChange={(val) => handleChange("displayStatus", Number(val))}
                 options={[
                   { label: "Inactive", value: 0 },
                   { label: "Active", value: 1 },
                 ]}
-                onChange={(val) => handleChange("displayStatus", val)}
               />
             </div>
 
-            {/* Display Order */}
-            <div>
-              <label>Display Order</label>
-              <Input
-                value={formData.displayOrder}
-                onChange={(e) => handleChange("displayOrder", e.target.value)}
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="col-span-2 flex justify-end gap-3">
-              {rowData && (
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setRowData(null);
-                    setFormData(initialForm);
-                    setErrors({});
-                  }}
-                >
-                  Cancel
-                </Button>
-              )}
-              <div className="col-span-2 flex justify-between w-full">
-                <button
-                  className="px-6 py-2 rounded-md cursor-pointer"
-                  onClick={() => {
-                    setOpenModal(false);
-                    setFormData(initialData);
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-green-600 text-white px-6 py-2 rounded-md cursor-pointer hover:bg-green-700"
-                >
-                  Submit
-                </button>
-              </div>
+            <div className="col-span-2 flex justify-between w-full">
+              <button
+                className="px-6 py-2 rounded-md cursor-pointer"
+                onClick={() => {
+                  setOpenModal(false);
+                  setFormData(initialData);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-6 py-2 rounded-md cursor-pointer hover:bg-green-700"
+              >
+                Submit
+              </button>
             </div>
           </form>
         </>
@@ -383,7 +349,7 @@ const ServiceTableOfContentss = () => {
         <div className="px-8 py-10 max-w-4xl mx-auto max-h-[80vh] overflow-auto">
           <div
             className="prose prose-lg"
-            dangerouslySetInnerHTML={{ __html: rowData?.description }}
+            dangerouslySetInnerHTML={{ __html: rowData?.answer }}
           ></div>
         </div>
       </Modal>
@@ -391,4 +357,4 @@ const ServiceTableOfContentss = () => {
   );
 };
 
-export default ServiceTableOfContentss;
+export default BlogFAQS;

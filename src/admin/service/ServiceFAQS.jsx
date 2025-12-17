@@ -18,15 +18,8 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Dropdown from "../../components/Dropdown";
 import PopConfirm from "../../components/PopConfirm";
-import { EllipsisVertical } from "lucide-react";
+import { ArrowLeft, EllipsisVertical } from "lucide-react";
 import TextEditor from "../../components/TextEditor";
-
-const serviceSchema = z.object({
-  question: z.string().min(1, "Question is required"),
-  answer: z.string().min(1, "Answer is required"),
-  displayOrder: z.number(),
-  displayStatus: z.number(),
-});
 
 const ServiceFAQS = () => {
   const { userId, serviceId } = useParams();
@@ -36,8 +29,16 @@ const ServiceFAQS = () => {
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState({});
-  const [rowData, setRowData] = useState(null);
   const [descModal, setDescModal] = useState(false);
+  const initialForm = {
+    question: "",
+    answer: "",
+    displayOrder: 0,
+    displayStatus: 1,
+  };
+  const [formData, setFormData] = useState(initialForm);
+  const [errors, setErrors] = useState({});
+  const [rowData, setRowData] = useState(null);
 
   useEffect(() => {
     dispatch(getAllServiceFAQS(serviceId));
@@ -50,20 +51,21 @@ const ServiceFAQS = () => {
     );
   }, [search, data]);
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-    reset,
-  } = useForm({
-    resolver: zodResolver(serviceSchema),
-    defaultValues: {
-      question: "",
-      answer: "",
-      displayOrder: 0,
-      displayStatus: 1,
-    },
-  });
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => ({ ...prev, [key]: "" }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.question.trim()) newErrors.question = "Question is required";
+
+    if (!formData.answer.trim()) newErrors.answer = "Answer is required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleDelete = (rowData) => {
     dispatch(deleteServiceFaqs({ id: rowData?.id, userId }))
@@ -93,21 +95,22 @@ const ServiceFAQS = () => {
   };
 
   const handleEdit = (item) => {
-    reset({
-      question: item?.question || "",
-      answer: item?.answer || "",
-      displayOrder: Number(item?.displayOrder || 0),
-      displayStatus: Number(item?.displayStatus || 0),
-    });
     setRowData(item);
-    setOpenModal(true);
+    setFormData({
+      question: item.question,
+      answer: item.answer,
+      displayOrder: Number(item.displayOrder || 0),
+      displayStatus: Number(item.displayStatus || 1),
+    });
+    setOpenModal(true)
   };
 
-  const onSubmit = (data) => {
-    console.log("dfgdkjgjgdjgd", data);
-    data.serviceId = serviceId;
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    const payload = { ...formData, serviceId };
     if (rowData) {
-      dispatch(updateServiceFaqs({ id: rowData?.id, userId, data }))
+      dispatch(updateServiceFaqs({ id: rowData?.id, userId, data: payload }))
         .then((resp) => {
           if (resp.meta.requestStatus === "fulfilled") {
             showToast({
@@ -134,7 +137,7 @@ const ServiceFAQS = () => {
           });
         });
     } else {
-      dispatch(addServiceFAQ({ userId, data }))
+      dispatch(addServiceFAQ({ userId, data: payload }))
         .then((resp) => {
           if (resp.meta.requestStatus === "fulfilled") {
             showToast({
@@ -237,90 +240,109 @@ const ServiceFAQS = () => {
 
   return (
     <>
-      <h2 className="text-lg font-semibold">Service FAQ</h2>
-      <Table
-        columns={dummyColumns}
-        dataSource={filteredData}
-        topContent={topContent}
-        className="w-full"
-      />
-      <Modal
-        title={rowData ? "Update service FAQ's" : "Create service FAQ's"}
-        open={openModal}
-        width={"60%"}
-        onCancel={() => setOpenModal(false)}
-        onOk={handleSubmit(onSubmit)}
-      >
-        <form
-          className="grid grid-cols-2 gap-6 max-h-[60vh] overflow-auto px-2 py-2.5"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          {/* Slug */}
-          <div className="flex flex-col col-span-2">
-            <label className="mb-1">Question</label>
-            <Controller
-              name="question"
-              control={control}
-              render={({ field }) => <Input {...field} />}
+      {!openModal ? (
+        <>
+          <h2 className="text-lg font-semibold">Service FAQ</h2>
+          <Table
+            columns={dummyColumns}
+            dataSource={filteredData}
+            topContent={topContent}
+            className="w-full"
+            scroll={{ y: "80vh", x: 1300 }}
+          />
+        </>
+      ) : (
+        <>
+          <div className="flex items-center gap-2">
+            <Button
+              icon={<ArrowLeft className="h-4 w-4 text-gray-800 font-medium" />}
+              variant="text"
+              size="small"
+              onClick={() => setOpenModal(false)}
             />
-            {errors.question && (
-              <p className="text-red-600 text-sm">{errors.question.message}</p>
-            )}
+            <h2 className="text-lg font-semibold">
+              {rowData ? "Update service faq's" : "Create service faq's"}
+            </h2>
           </div>
-
-          {/* Full Description */}
-          <div className="flex flex-col col-span-2">
-            <label className="mb-1">Answer</label>
-            <Controller
-              name="answer"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <>
-                  <TextEditor
-                    data={field?.value}
-                    onChange={(prev, editor) => {
-                      const newData = editor?.getData();
-                      field.onChange(newData);
-                    }}
-                  />
-                  {error && (
-                    <span className="text-red-500 text-sm">
-                      {error.answer.message}
-                    </span>
-                  )}
-                </>
+          <form
+            onSubmit={handleSubmit}
+            className="grid grid-cols-2 gap-6 mb-6 px-4 py-4"
+          >
+            {/* Question */}
+            <div className="col-span-2">
+              <label>
+                Question <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={formData.question}
+                onChange={(e) => handleChange("question", e.target.value)}
+              />
+              {errors.question && (
+                <p className="text-red-600 text-sm">{errors.question}</p>
               )}
-            />
-          </div>
+            </div>
 
-          <Controller
-            name="displayStatus"
-            control={control}
-            render={({ field }) => (
+            {/* Answer */}
+            <div className="col-span-2">
+              <label>
+                Answer <span className="text-red-500">*</span>
+              </label>
+              <TextEditor
+                data={formData.answer}
+                onChange={(prev, editor) =>
+                  handleChange("answer", editor.getData())
+                }
+              />
+              {errors.answer && (
+                <p className="text-red-600 text-sm">{errors.answer}</p>
+              )}
+            </div>
+
+            {/* Display Status */}
+            <div>
+              <label>Display Status</label>
               <Select
-                value={field.value}
-                onChange={(val) => field.onChange(Number(val))}
+                value={formData.displayStatus}
+                onChange={(val) => handleChange("displayStatus", Number(val))}
                 options={[
                   { label: "Inactive", value: 0 },
                   { label: "Active", value: 1 },
                 ]}
               />
-            )}
-          />
+            </div>
 
-          <Controller
-            name="displayOrder"
-            control={control}
-            render={({ field }) => (
+            {/* Display Order */}
+            <div>
+              <label>Display Order</label>
               <Input
-                {...field}
                 type="number"
-                onChange={(e) => field.onChange(Number(e.target.value))}
+                value={formData.displayOrder}
+                onChange={(e) =>
+                  handleChange("displayOrder", Number(e.target.value))
+                }
               />
-            )}
-          />
-        </form>
-      </Modal>
+            </div>
+
+            <div className="col-span-2 flex justify-between w-full">
+              <button
+                className="px-6 py-2 rounded-md cursor-pointer"
+                onClick={() => {
+                  setOpenModal(false);
+                  setFormData(initialData);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-6 py-2 rounded-md cursor-pointer hover:bg-green-700"
+              >
+                Submit
+              </button>
+            </div>
+          </form>
+        </>
+      )}
 
       <Modal
         title={"Description"}

@@ -1,19 +1,16 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Table from "../../components/Table";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
-import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useToast } from "../../components/ToastProvider";
 import dayjs from "dayjs";
 import Input from "../../components/Input";
 import Select from "../../components/Select";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import Dropdown from "../../components/Dropdown";
 import PopConfirm from "../../components/PopConfirm";
-import { EllipsisVertical } from "lucide-react";
+import { ArrowLeft, EllipsisVertical } from "lucide-react";
 import {
   addBlog,
   deleteBlog,
@@ -27,26 +24,12 @@ import {
 } from "../../toolkit/slices/serviceSlice";
 import TextEditor from "../../components/TextEditor";
 import FileUploader from "../../components/FileUploader";
+import { generateSlug } from "../../navData";
 
-const blogSchema = z.object({
-  title: z.string().nonempty("Title is required"),
-  slug: z.string().nonempty("Slug is required"),
-  image: z.string().optional(),
-  // image: z.string().nonempty("Image is required"),
-  summary: z.string().nonempty("Summary is required"),
-  description: z.string().nonempty("Description is required"),
-  metaTitle: z.string().optional(),
-  metaKeyword: z.string().optional(),
-  metaDescription: z.string().optional(),
-  displayStatus: z.number(),
-  searchKeyword: z.string().optional(),
-  categoryId: z.number(),
-  subcategoryId: z.number(),
-  serviceIds: z.array(z.number()).optional(),
-});
+const Required = () => <span className="text-red-500 ml-1">*</span>;
 
 const Blogs = () => {
-  const { userId, categoryId } = useParams();
+  const { userId } = useParams();
   const { showToast } = useToast();
   const dispatch = useDispatch();
   const data = useSelector((state) => state.blogs.blogList);
@@ -58,6 +41,24 @@ const Blogs = () => {
   const [descModal, setDescModal] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [rowData, setRowData] = useState(null);
+  const initialForm = {
+    title: "",
+    slug: "",
+    image: null,
+    summary: "",
+    description: "",
+    categoryId: "",
+    subcategoryId: "",
+    serviceIds: [],
+    metaTitle: "",
+    metaKeyword: "",
+    metaDescription: "",
+    displayStatus: 1,
+    searchKeyword: "",
+  };
+
+  const [formData, setFormData] = useState(initialForm);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     dispatch(getBlogList(userId));
@@ -71,29 +72,35 @@ const Blogs = () => {
     );
   }, [search, data]);
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-    reset,
-  } = useForm({
-    resolver: zodResolver(blogSchema),
-    defaultValues: {
-      title: "",
-      slug: "",
-      image: "",
-      summary: "",
-      description: "",
-      metaTitle: "",
-      metaKeyword: "",
-      metaDescription: "",
-      displayStatus: 0,
-      searchKeyword: "",
-      categoryId: "",
-      subcategoryId: "",
-      serviceIds: [],
-    },
-  });
+  const handleChange = (key, value) => {
+    setFormData((prev) => {
+      const updated = { ...prev, [key]: value };
+      if (key === "title") {
+        updated.slug = generateSlug(value);
+      }
+      return updated;
+    });
+    setErrors((prev) => ({ ...prev, [key]: "" }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.title.trim()) newErrors.title = "Title is required";
+
+    if (!formData.slug.trim()) newErrors.slug = "Slug is required";
+
+    if (!formData.categoryId) newErrors.categoryId = "Category is required";
+
+    if (!formData.subcategoryId)
+      newErrors.subcategoryId = "Subcategory is required";
+
+    if (!formData.description || formData.description.trim() === "")
+      newErrors.description = "Description is required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleDelete = (rowData) => {
     dispatch(deleteBlog({ id: rowData?.id, userId }))
@@ -123,7 +130,7 @@ const Blogs = () => {
   };
 
   const handleEdit = (item) => {
-    reset({
+    setFormData({
       title: item.title,
       slug: item.slug,
       image: item.image,
@@ -143,6 +150,7 @@ const Blogs = () => {
   };
 
   const onSubmit = (data) => {
+    if (!validateForm()) return;
     if (rowData) {
       dispatch(updateBlog({ id: rowData?.id, userId, data }))
         .then((resp) => {
@@ -298,265 +306,237 @@ const Blogs = () => {
 
   return (
     <>
-      <h2 className="text-lg font-semibold">Blogs list</h2>
-      <Table
-        columns={dummyColumns}
-        dataSource={filteredData}
-        topContent={topContent}
-        className="w-full"
-      />
-      <Modal
-        title={rowData ? "Update blogs" : "Create blogs"}
-        open={openModal}
-        width={"60%"}
-        onCancel={() => setOpenModal(false)}
-        onOk={handleSubmit(onSubmit)}
-      >
-        <form className="grid grid-cols-2 gap-6 max-h-[60vh] overflow-auto px-2 py-2.5">
-          {/* Title */}
-          <div className="flex flex-col">
-            <label className="mb-1">Title</label>
-            <Controller
-              name="title"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Enter title" />
-              )}
+      {!openModal ? (
+        <>
+          <h2 className="text-lg font-semibold">Blogs list</h2>
+          <Table
+            columns={dummyColumns}
+            dataSource={filteredData}
+            topContent={topContent}
+            className="w-full"
+          />
+        </>
+      ) : (
+        <>
+          <div className="flex items-center gap-2">
+            <Button
+              icon={<ArrowLeft className="h-4 w-4 text-gray-800 font-medium" />}
+              variant="text"
+              size="small"
+              onClick={() => setOpenModal(false)}
             />
-            {errors.title && (
-              <p className="text-red-600 text-sm">{errors.title.message}</p>
-            )}
+            <h2 className="text-lg font-semibold">
+              {rowData ? "Update blog" : "Create blog"}
+            </h2>
           </div>
+          <form
+            className="grid grid-cols-2 gap-6 max-h-[80vh] overflow-auto px-2 py-2.5"
+            onSubmit={() => onSubmit(formData)}
+          >
+            {/* Title */}
+            <div className="flex flex-col">
+              <label className="mb-1">
+                Title <Required />
+              </label>
+              <Input
+                value={formData.title}
+                placeholder="Enter title"
+                onChange={(e) => handleChange("title", e.target.value)}
+              />
+              {errors.title && (
+                <p className="text-red-600 text-sm">{errors.title}</p>
+              )}
+            </div>
 
-          {/* Slug */}
-          <div className="flex flex-col">
-            <label className="mb-1">Slug</label>
-            <Controller
-              name="slug"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Enter slug" />
+            {/* Slug */}
+            <div className="flex flex-col">
+              <label className="mb-1">
+                Slug <Required />
+              </label>
+              <Input
+                value={formData.slug}
+                placeholder="Enter slug"
+                onChange={(e) => handleChange("slug", e.target.value)}
+              />
+              {errors.slug && (
+                <p className="text-red-600 text-sm">{errors.slug}</p>
               )}
-            />
-            {errors.slug && (
-              <p className="text-red-600 text-sm">{errors.slug.message}</p>
-            )}
-          </div>
+            </div>
 
-          {/* Image */}
-          <div className="flex flex-col">
-            <label className="mb-1">Image</label>
-            <Controller
-              name="image"
-              control={control}
-              render={({ field }) => (
-                <FileUploader
-                  value={field.value}
-                  onChange={(e) => field.onChange(e)}
-                />
-              )}
-            />
-            {errors.image && (
-              <p className="text-red-600 text-sm">{errors.image.message}</p>
-            )}
-          </div>
+            {/* Image */}
+            <div className="flex flex-col">
+              <label className="mb-1">Image</label>
+              <FileUploader
+                value={formData.image}
+                onChange={(file) => handleChange("image", file)}
+              />
+            </div>
 
-          {/* Summary */}
-          <div className="flex flex-col">
-            <label className="mb-1">Summary</label>
-            <Controller
-              name="summary"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  as="textarea"
-                  rows={3}
-                  {...field}
-                  placeholder="Write summary"
-                />
-              )}
-            />
-            {errors.summary && (
-              <p className="text-red-600 text-sm">{errors.summary.message}</p>
-            )}
-          </div>
+            {/* Summary */}
+            <div className="flex flex-col">
+              <label className="mb-1">Summary</label>
+              <Input
+                as="textarea"
+                rows={3}
+                value={formData.summary}
+                placeholder="Write summary"
+                onChange={(e) => handleChange("summary", e.target.value)}
+              />
+            </div>
 
-          {/* Description */}
-          <div className="flex flex-col col-span-2">
-            <label className="mb-1">Description</label>
-            <Controller
-              name="description"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <>
-                  <TextEditor
-                    data={field?.value}
-                    onChange={(prev, editor) => {
-                      const newData = editor?.getData();
-                      field.onChange(newData);
-                    }}
-                  />
-                  {error && (
-                    <span className="text-red-500 text-sm">
-                      {error.message}
-                    </span>
-                  )}
-                </>
+            {/* Description */}
+            <div className="flex flex-col col-span-2">
+              <label className="mb-1">
+                Description <Required />
+              </label>
+              <TextEditor
+                data={formData.description}
+                onChange={(prev, editor) => {
+                  handleChange("description", editor.getData());
+                }}
+              />
+              {errors.description && (
+                <p className="text-red-600 text-sm">{errors.description}</p>
               )}
-            />
-            {errors.description && (
-              <p className="text-red-600 text-sm">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
+            </div>
 
-          {/* Category ID */}
-          <div className="flex flex-col">
-            <label className="mb-1">Category</label>
-            <Controller
-              name="categoryId"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value}
-                  options={categoryList?.map((c) => ({
-                    label: c.name,
-                    value: c.id,
-                  }))}
-                  onChange={(e) => {
-                    field.onChange(e);
-                    dispatch(getAllSubCategoriesByCategoryId(e));
-                  }}
-                />
+            {/* Category ID */}
+            <div className="flex flex-col">
+              <label className="mb-1">
+                Category <Required />
+              </label>
+              <Select
+                value={formData.categoryId}
+                options={categoryList?.map((c) => ({
+                  label: c.name,
+                  value: c.id,
+                }))}
+                onChange={(value) => {
+                  handleChange("categoryId", value);
+                  dispatch(getAllSubCategoriesByCategoryId(value));
+                }}
+              />
+              {errors.categoryId && (
+                <p className="text-red-600 text-sm">{errors.categoryId}</p>
               )}
-            />
-            {errors.categoryId && (
-              <p className="text-red-600 text-sm">
-                {errors.categoryId.message}
-              </p>
-            )}
-          </div>
+            </div>
 
-          {/* Subcategory ID */}
-          <div className="flex flex-col">
-            <label className="mb-1">Subcategory</label>
-            <Controller
-              name="subcategoryId"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value}
-                  options={subCategoryList?.map((sc) => ({
-                    label: sc.name,
-                    value: sc.id,
-                  }))}
-                  onChange={(e) => {
-                    field.onChange(e);
-                    dispatch(getServiceListBySubCategoryId(e));
-                  }}
-                />
+            {/* Subcategory ID */}
+            <div className="flex flex-col">
+              <label className="mb-1">
+                Subcategory <Required />
+              </label>
+              <Select
+                value={formData.subcategoryId}
+                options={subCategoryList?.map((sc) => ({
+                  label: sc.name,
+                  value: sc.id,
+                }))}
+                onChange={(value) => {
+                  handleChange("subcategoryId", value);
+                  dispatch(getServiceListBySubCategoryId(value));
+                }}
+              />
+              {errors.subcategoryId && (
+                <p className="text-red-600 text-sm">{errors.subcategoryId}</p>
               )}
-            />
-            {errors.subcategoryId && (
-              <p className="text-red-600 text-sm">
-                {errors.subcategoryId.message}
-              </p>
-            )}
-          </div>
+            </div>
 
-          {/* Service IDs (MULTI SELECT) */}
-          <div className="flex flex-col">
-            <label className="mb-1">Services</label>
-            <Controller
-              name="serviceIds"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value}
-                  multiple
-                  options={serviceList?.map((s) => ({
-                    label: s.title,
-                    value: s.id,
-                  }))}
-                  onChange={(e) => field.onChange(e)}
-                />
-              )}
-            />
-          </div>
+            {/* Service IDs (MULTI SELECT) */}
+            <div className="flex flex-col">
+              <label className="mb-1">Services</label>
+              <Select
+                multiple
+                value={formData.serviceIds}
+                options={serviceList?.map((s) => ({
+                  label: s.title,
+                  value: s.id,
+                }))}
+                onChange={(value) => handleChange("serviceIds", value)}
+              />
+            </div>
 
-          {/* Meta Title */}
-          <div className="flex flex-col">
-            <label className="mb-1">Meta Title</label>
-            <Controller
-              name="metaTitle"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Meta title" />
-              )}
-            />
-          </div>
+            {/* Meta Title */}
+            <div className="flex flex-col">
+              <label className="mb-1">Meta Title</label>
+              <Input
+                placeholder="Meta title"
+                value={formData?.metaTitle}
+                onChange={(e) => handleChange("metaTitle", e.target.value)}
+              />
+            </div>
 
-          {/* Meta Keyword */}
-          <div className="flex flex-col">
-            <label className="mb-1">Meta Keyword</label>
-            <Controller
-              name="metaKeyword"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Meta keyword" />
-              )}
-            />
-          </div>
+            {/* Meta Keyword */}
+            <div className="flex flex-col">
+              <label className="mb-1">Meta Keyword</label>
+              <Input
+                value={formData?.metaKeyword}
+                onChange={(e) => handleChange("metaKeyword", e.target.value)}
+                placeholder="Meta keyword"
+              />
+            </div>
 
-          {/* Meta Description */}
-          <div className="flex flex-col">
-            <label className="mb-1">Meta Description</label>
-            <Controller
-              name="metaDescription"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  as="textarea"
-                  rows={3}
-                  {...field}
-                  placeholder="Meta description"
-                />
-              )}
-            />
-          </div>
+            {/* Meta Description */}
+            <div className="flex flex-col">
+              <label className="mb-1">Meta Description</label>
 
-          {/* Display Status */}
-          <div className="flex flex-col">
-            <label className="mb-1">Display Status</label>
-            <Controller
-              name="displayStatus"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  options={[
-                    { label: "Inactive", value: 0 },
-                    { label: "Active", value: 1 },
-                  ]}
-                />
-              )}
-            />
-          </div>
+              <Input
+                as="textarea"
+                rows={3}
+                placeholder="Meta description"
+                value={formData?.metaDescription}
+                onChange={(e) =>
+                  handleChange("metaDescription", e.target.value)
+                }
+              />
+            </div>
 
-          {/* Search Keyword */}
-          <div className="flex flex-col">
-            <label className="mb-1">Search Keyword</label>
-            <Controller
-              name="searchKeyword"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Search keyword" />
-              )}
-            />
-          </div>
-        </form>
-      </Modal>
+            {/* Display Status */}
+            <div className="flex flex-col">
+              <label className="mb-1">Display Status</label>
+
+              <Select
+                options={[
+                  { label: "Inactive", value: 0 },
+                  { label: "Active", value: 1 },
+                ]}
+                value={formData?.displayStatus}
+                onChange={(e) => handleChange("displayStatus", e)}
+              />
+            </div>
+
+            {/* Search Keyword */}
+            <div className="flex flex-col">
+              <label className="mb-1">Search Keyword</label>
+
+              <Input
+                placeholder="Search keyword"
+                value={formData?.searchKeyword}
+                onChange={(e) => handleChange("searchKeyword", e.target.value)}
+              />
+            </div>
+
+            {/* Submit */}
+            <div className="col-span-2 flex justify-between">
+              <button
+                className="px-6 py-2 rounded-md cursor-pointer"
+                onClick={() => {
+                  setOpenModal(false);
+                  setFormData(initialForm);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-6 py-2 rounded-md cursor-pointer hover:bg-green-700"
+              >
+                Submit
+              </button>
+            </div>
+          </form>
+        </>
+      )}
 
       <Modal
         title={"Description"}

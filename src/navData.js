@@ -132,3 +132,12 @@ export const cards = [
     text: "Our certified solar engineers design reliable systems for all.",
   },
 ];
+
+export const generateSlug = (text) => {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "") // remove special chars
+    .replace(/\s+/g, "-") // spaces to hyphen
+    .replace(/-+/g, "-"); // avoid multiple hyphens
+};

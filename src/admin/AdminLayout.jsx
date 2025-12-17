@@ -3,19 +3,19 @@ import { useDispatch } from "react-redux";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { logoutUser } from "../toolkit/slices/authSlice";
 import { useToast } from "../components/ToastProvider";
-import { List, Star } from "lucide-react";
+import { FileSliders, Folder, Grid2x2, List, Star } from "lucide-react";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const dispatch = useDispatch();
   const sidebarMenu = [
-    { title: "Dashboard", icon: "📊", path: "dashboard" },
-    { title: "Category", icon: "👤", path: "category" },
-    { title: "Services", icon: "👤", path: "services" },
+    { title: "Dashboard", icon: <Grid2x2 />, path: "dashboard" },
+    { title: "Category", icon: <Folder />, path: "category" },
+    { title: "Services", icon: <FileSliders />, path: "services" },
     { title: "Blogs", icon: "🧾", path: "blogs" },
-    { title: "Rating", icon: <Star/>, path: "rating" },
-    { title: "Enquiry", icon: <List/>, path: "enquiry" },
+    { title: "Rating", icon: <Star />, path: "rating" },
+    { title: "Enquiry", icon: <List />, path: "enquiry" },
   ];
 
   const handleLogout = () => {
@@ -29,7 +29,7 @@ const AdminLayout = () => {
           });
           localStorage.clear();
           navigate(`/login`);
-          window.location.reload()
+          window.location.reload();
         } else {
           showToast({
             title: "Error!",
@@ -62,7 +62,7 @@ const AdminLayout = () => {
               <Link
                 key={index}
                 to={item.path}
-                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-200"
+                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-200 font-medium"
               >
                 <span className="text-lg">{item.icon}</span>
                 <span className="text-gray-700">{item.title}</span>
@@ -70,7 +70,6 @@ const AdminLayout = () => {
             ))}
           </nav>
         </div>
-        
 
         {/* Bottom Logout Button */}
         <div className="mt-auto border-t border-gray-200">

@@ -323,6 +323,30 @@ export const deleteServiceFaqs = createAsyncThunk(
   }
 );
 
+export const getClientServiceList = createAsyncThunk(
+  "getClientServiceList",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/services`);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err?.response?.data?.message);
+    }
+  }
+);
+
+export const getClientServiceDetailBySlug = createAsyncThunk(
+  "getClientServiceDetailBySlug",
+  async (slug) => {
+    try {
+      const response = await api.get(`/services/slug/${slug}`);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err?.response?.data?.message);
+    }
+  }
+);
+
 const serviceSlice = createSlice({
   name: "service",
   initialState: {
@@ -333,7 +357,9 @@ const serviceSlice = createSlice({
     allServiceList: [],
     serviceTableOfContentList: [],
     serviceFaqsList: [],
-    serviceDetail:{}
+    serviceDetail: {},
+    clientServiceList: [],
+    clientServiceDetail: {},
   },
   extraReducers: (builder) => {
     builder.addCase(getAllCategories.pending, (state) => {
@@ -416,6 +442,28 @@ const serviceSlice = createSlice({
       state.serviceDetail = action.payload;
     });
     builder.addCase(getServiceDetailById.rejected, (state) => {
+      state.loading = "rejected";
+    });
+
+    builder.addCase(getClientServiceList.pending, (state) => {
+      state.loading = "pending";
+    });
+    builder.addCase(getClientServiceList.fulfilled, (state, action) => {
+      state.loading = "success";
+      state.clientServiceList = action.payload;
+    });
+    builder.addCase(getClientServiceList.rejected, (state) => {
+      state.loading = "rejected";
+    });
+
+    builder.addCase(getClientServiceDetailBySlug.pending, (state) => {
+      state.loading = "pending";
+    });
+    builder.addCase(getClientServiceDetailBySlug.fulfilled, (state, action) => {
+      state.loading = "success";
+      state.clientServiceDetail = action.payload;
+    });
+    builder.addCase(getClientServiceDetailBySlug.rejected, (state) => {
       state.loading = "rejected";
     });
   },

@@ -61,12 +61,95 @@ export const getBlogDetailById = createAsyncThunk(
   }
 );
 
+export const getClientBlogList = createAsyncThunk(
+  "getClientBlogList",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/blogs`);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data.message);
+    }
+  }
+);
+
+export const getClientBlogDetailBySlug = createAsyncThunk(
+  "getClientBlogDetailBySlug",
+  async (slug, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/blogs/${slug}`);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data.message);
+    }
+  }
+);
+
+export const addBlogFAQS = createAsyncThunk(
+  "addBlogFAQS",
+  async ({ blogId, userId, data }, { rejectWithValue }) => {
+    try {
+      const response = await api.post(
+        `/api/blogs/${blogId}/faqs?userId=${userId}`,
+        data
+      );
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data.message);
+    }
+  }
+);
+
+export const updateBlogFAQS = createAsyncThunk(
+  "updateBlogFAQS",
+  async ({ blogId, blogId, userId, data }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(
+        `/api/blogs/${blogId}/faqs/${blogId}?userId=${userId}`,
+        data
+      );
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data.message);
+    }
+  }
+);
+
+export const deleteBlogFAQ = createAsyncThunk(
+  "deleteBlogFAQ",
+  async ({ blogId, faqId, userId }, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(
+        `/api/blogs/${blogId}/faqs/${faqId}?userId=${userId}`
+      );
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data.message);
+    }
+  }
+);
+
+export const getBlogFaqsList = createAsyncThunk(
+  "getBlogFaqsList",
+  async (blogId, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/blogs/${blogId}`);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data.message);
+    }
+  }
+);
+
 const blogSlice = createSlice({
   name: "blogs",
   initialState: {
     loading: "",
     blogList: [],
     blogDetail: {},
+    clientBlogList: [],
+    clientBlogDetail: {},
+    blogFaqList:[]
   },
   extraReducers: (builder) => {
     builder.addCase(getBlogList.pending, (state) => {
@@ -88,6 +171,39 @@ const blogSlice = createSlice({
       state.blogDetail = action.payload;
     });
     builder.addCase(getBlogDetailById.rejected, (state) => {
+      state.loading = "error";
+    });
+
+    builder.addCase(getClientBlogList.pending, (state) => {
+      state.loading = "pending";
+    });
+    builder.addCase(getClientBlogList.fulfilled, (state, action) => {
+      state.loading = "success";
+      state.clientBlogList = action.payload;
+    });
+    builder.addCase(getClientBlogList.rejected, (state) => {
+      state.loading = "error";
+    });
+
+    builder.addCase(getClientBlogDetailBySlug.pending, (state) => {
+      state.loading = "pending";
+    });
+    builder.addCase(getClientBlogDetailBySlug.fulfilled, (state, action) => {
+      state.loading = "success";
+      state.clientBlogDetail = action.payload;
+    });
+    builder.addCase(getClientBlogDetailBySlug.rejected, (state) => {
+      state.loading = "error";
+    });
+
+    builder.addCase(getBlogFaqsList.pending, (state) => {
+      state.loading = "pending";
+    });
+    builder.addCase(getBlogFaqsList.fulfilled, (state, action) => {
+      state.loading = "success";
+      state.blogFaqList = action.payload;
+    });
+    builder.addCase(getBlogFaqsList.rejected, (state) => {
       state.loading = "error";
     });
   },

@@ -569,7 +569,7 @@ export default function TextEditor({
   }, [editorConfig]);
 
   return (
-    <div className="main-container w-[99%]">
+    <div  className="main-container">
       <div
         className="editor-container editor-container_classic-editor editor-container_include-annotations editor-container_include-style editor-container_include-fullscreen"
         ref={editorContainerRef}
@@ -587,10 +587,10 @@ export default function TextEditor({
               )}
             </div>
           </div>
-          <div
+          {/* <div
             className="editor-container__sidebar"
             ref={editorAnnotationsRef}
-          ></div>
+          ></div> */}
         </div>
       </div>
       <div className="revision-history" ref={editorRevisionHistoryRef}>

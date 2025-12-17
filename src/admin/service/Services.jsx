@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import Table from "../../components/Table";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
-import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addService,
@@ -18,30 +17,12 @@ import { useToast } from "../../components/ToastProvider";
 import dayjs from "dayjs";
 import Input from "../../components/Input";
 import Select from "../../components/Select";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import Dropdown from "../../components/Dropdown";
 import PopConfirm from "../../components/PopConfirm";
-import { EllipsisVertical } from "lucide-react";
+import { ArrowLeft, EllipsisVertical } from "lucide-react";
 import FileUploader from "../../components/FileUploader";
 import TextEditor from "../../components/TextEditor";
-
-const serviceSchema = z.object({
-  title: z.string().nonempty("Title is required"),
-  slug: z.string().nonempty("Slug is required"),
-  categoryId: z.number(),
-  subcategoryId: z.number(),
-  shortDescription: z.string().nonempty("Short description is required"),
-  fullDescription: z.string().nonempty("Full description is required"),
-  bannerImage: z.string().nonempty("Banner image is required"),
-  thumbnail: z.string().nonempty("Thumbnail is required"),
-  videoUrl: z.string().optional(),
-  metaTitle: z.string().optional(),
-  metaKeyword: z.string().optional(),
-  metaDescription: z.string().optional(),
-  displayStatus: z.number(),
-  showHomeStatus: z.number(),
-});
+import { generateSlug } from "../../navData";
 
 const Services = () => {
   const { userId, categoryId, subcategoryId } = useParams();
@@ -55,6 +36,24 @@ const Services = () => {
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [rowData, setRowData] = useState(null);
   const [descModal, setDescModal] = useState(false);
+  const [errors, setErrors] = useState({});
+  const initialData = {
+    title: "",
+    slug: "",
+    categoryId: 0,
+    subcategoryId: 0,
+    shortDescription: "",
+    fullDescription: "",
+    bannerImage: "",
+    thumbnail: "",
+    videoUrl: "",
+    metaTitle: "",
+    metaKeyword: "",
+    metaDescription: "",
+    displayStatus: 0,
+    showHomeStatus: 0,
+  };
+  const [formData, setFormData] = useState(initialData);
 
   useEffect(() => {
     dispatch(getAllServices(subcategoryId));
@@ -68,28 +67,47 @@ const Services = () => {
     );
   }, [search, data]);
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-    reset,
-  } = useForm({
-    resolver: zodResolver(serviceSchema),
-    defaultValues: {
-      title: "",
-      slug: "",
-      shortDescription: "",
-      fullDescription: "",
-      bannerImage: "",
-      thumbnail: "",
-      videoUrl: "",
-      metaTitle: "",
-      metaKeyword: "",
-      metaDescription: "",
-      displayStatus: 0,
-      showHomeStatus: 0,
-    },
-  });
+  const handleChange = (key, value) => {
+    setFormData((prev) => {
+      const updated = { ...prev, [key]: value };
+
+      // auto-generate slug when title changes
+      if (key === "title") {
+        updated.slug = generateSlug(value);
+      }
+
+      return updated;
+    });
+
+    // clear error when user types
+    setErrors((prev) => ({
+      ...prev,
+      [key]: "",
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = "Title is required";
+    }
+
+    if (!formData.categoryId) {
+      newErrors.categoryId = "Category is required";
+    }
+
+    if (!formData.subcategoryId) {
+      newErrors.subcategoryId = "Subcategory is required";
+    }
+
+    if (!formData.fullDescription || formData.fullDescription.trim() === "") {
+      newErrors.fullDescription = "Full description is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleDelete = (rowData) => {
     dispatch(deleteSubCategory({ id: rowData?.id, userId }))
@@ -119,7 +137,7 @@ const Services = () => {
   };
 
   const handleEdit = (item) => {
-    reset({
+    setFormData({
       title: item?.title,
       slug: item?.slug,
       shortDescription: item?.shortDescription,
@@ -138,6 +156,7 @@ const Services = () => {
   };
 
   const onSubmit = (data) => {
+    if (!validateForm()) return;
     if (rowData) {
       dispatch(updateService({ id: rowData?.id, userId, data }))
         .then((resp) => {
@@ -300,286 +319,239 @@ const Services = () => {
 
   return (
     <>
-      <h2 className="text-lg font-semibold">Service list</h2>
-      <Table
-        columns={dummyColumns}
-        dataSource={filteredData}
-        topContent={topContent}
-        className="w-full"
-        scroll={{ y: "78vh" }}
-      />
-      <Modal
-        title={rowData ? "Update service" : "Create service"}
-        open={openModal}
-        width={"60%"}
-        onCancel={() => setOpenModal(false)}
-        onOk={handleSubmit(onSubmit)}
-      >
-        <form className="grid grid-cols-2 gap-6 max-h-[60vh] overflow-auto px-2 py-2.5">
-          {/* Title */}
-          <div className="flex flex-col">
-            <label className="mb-1">Title</label>
-            <Controller
-              name="title"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Enter title" />
-              )}
+      {!openModal ? (
+        <>
+          <h2 className="text-lg font-semibold">Service list</h2>
+          <Table
+            columns={dummyColumns}
+            dataSource={filteredData}
+            topContent={topContent}
+            className="w-full"
+            scroll={{ y: "78vh", x: 1200 }}
+          />
+        </>
+      ) : (
+        <>
+          <div className="flex items-center gap-2">
+            <Button
+              icon={<ArrowLeft className="h-4 w-4 text-gray-800 font-medium" />}
+              variant="text"
+              size="small"
+              onClick={() => setOpenModal(false)}
             />
-            {errors.title && (
-              <p className="text-red-600 text-sm">{errors.title.message}</p>
-            )}
+            <h2 className="text-lg font-semibold">
+              {rowData ? "Update service" : "Create service"}
+            </h2>
           </div>
+          <form
+            className="grid grid-cols-2 gap-6 max-h-[80vh] overflow-auto px-2 py-2.5 max-w-full"
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSubmit(formData);
+            }}
+          >
+            {/* Title */}
+            <div className="flex flex-col">
+              <label className="mb-1">Title</label>
+              <Input
+                value={formData.title}
+                placeholder="Enter title"
+                onChange={(e) => handleChange("title", e.target.value)}
+              />
+              {errors.title && (
+                <span className="text-red-500 text-sm mt-1">
+                  {errors.title}
+                </span>
+              )}
+            </div>
 
-          {/* Slug */}
-          <div className="flex flex-col">
-            <label className="mb-1">Slug</label>
-            <Controller
-              name="slug"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Enter slug" />
-              )}
-            />
-            {errors.slug && (
-              <p className="text-red-600 text-sm">{errors.slug.message}</p>
-            )}
-          </div>
+            {/* Slug */}
+            <div className="flex flex-col">
+              <label className="mb-1">Slug</label>
+              <Input
+                value={formData.slug}
+                placeholder="Enter slug"
+                onChange={(e) => handleChange("slug", e.target.value)}
+              />
+            </div>
 
-          {/* category */}
-          <div className="flex flex-col">
-            <label className="mb-1">Category</label>
-            <Controller
-              name="categoryId"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value}
-                  options={
-                    categoryList?.length > 0
-                      ? categoryList?.map((item) => ({
-                          label: item?.name,
-                          value: item?.id,
-                        }))
-                      : []
-                  }
-                  placeholder="Select category"
-                  onChange={(e) => {
-                    dispatch(getAllSubCategoriesByCategoryId(e));
-                    field.onChange(e);
-                  }}
-                />
+            {/* Category */}
+            <div className="flex flex-col">
+              <label className="mb-1">Category</label>
+              <Select
+                value={formData.categoryId}
+                options={categoryList?.map((item) => ({
+                  label: item.name,
+                  value: item.id,
+                }))}
+                placeholder="Select category"
+                onChange={(value) => {
+                  dispatch(getAllSubCategoriesByCategoryId(value));
+                  handleChange("categoryId", value);
+                }}
+              />
+              {errors.categoryId && (
+                <span className="text-red-500 text-sm mt-1">
+                  {errors.categoryId}
+                </span>
               )}
-            />
-            {errors.slug && (
-              <p className="text-red-600 text-sm">{errors.slug.message}</p>
-            )}
-          </div>
+            </div>
 
-          {/* sub category */}
-          <div className="flex flex-col">
-            <label className="mb-1">Subcategory</label>
-            <Controller
-              name="subcategoryId"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value}
-                  options={
-                    subcategoryList?.length > 0
-                      ? subcategoryList?.map((item) => ({
-                          label: item?.name,
-                          value: item?.id,
-                        }))
-                      : []
-                  }
-                  placeholder="Select subcategory"
-                  onChange={(e) => {
-                    field.onChange(e);
-                  }}
-                />
+            {/* Subcategory */}
+            <div className="flex flex-col">
+              <label className="mb-1">Subcategory</label>
+              <Select
+                value={formData.subcategoryId}
+                options={subcategoryList?.map((item) => ({
+                  label: item.name,
+                  value: item.id,
+                }))}
+                placeholder="Select subcategory"
+                onChange={(value) => handleChange("subcategoryId", value)}
+              />
+              {errors.subcategoryId && (
+                <span className="text-red-500 text-sm mt-1">
+                  {errors.subcategoryId}
+                </span>
               )}
-            />
-            {errors.slug && (
-              <p className="text-red-600 text-sm">{errors.slug.message}</p>
-            )}
-          </div>
+            </div>
 
-          {/* Short Description */}
-          <div className="flex flex-col col-span-2">
-            <label className="mb-1">Short Description</label>
-            <Controller
-              name="shortDescription"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  as="textarea"
-                  rows={3}
-                  {...field}
-                  placeholder="Short description"
-                />
-              )}
-            />
-            {errors.shortDescription && (
-              <p className="text-red-600 text-sm">
-                {errors.shortDescription.message}
-              </p>
-            )}
-          </div>
+            {/* Short Description */}
+            <div className="flex flex-col col-span-2">
+              <label className="mb-1">Short Description</label>
+              <TextEditor
+                data={formData.shortDescription}
+                onChange={(prev, editor) => {
+                  handleChange("shortDescription", editor.getData());
+                }}
+              />
+            </div>
 
-          {/* Full Description */}
-          <div className="flex flex-col col-span-2">
-            <label className="mb-1">Full Description</label>
-            <Controller
-              name="fullDescription"
-              control={control}
-              render={({ field, fieldState: { error } }) => (
-                <>
-                  <TextEditor
-                    data={field?.value}
-                    onChange={(prev, editor) => {
-                      const newData = editor?.getData();
-                      field.onChange(newData);
-                    }}
-                  />
-                  {error && (
-                    <span className="text-red-500 text-sm">
-                      {error.message}
-                    </span>
-                  )}
-                </>
+            {/* Full Description */}
+            <div className="flex flex-col col-span-2">
+              <label className="mb-1">Full Description</label>
+              <TextEditor
+                data={formData.fullDescription}
+                onChange={(prev, editor) => {
+                  handleChange("fullDescription", editor.getData());
+                }}
+              />
+              {errors.fullDescription && (
+                <span className="text-red-500 text-sm mt-1">
+                  {errors.fullDescription}
+                </span>
               )}
-            />
-            {errors.fullDescription && (
-              <p className="text-red-600 text-sm">
-                {errors.fullDescription.message}
-              </p>
-            )}
-          </div>
+            </div>
 
-          {/* Banner Image */}
-          <div className="flex flex-col">
-            <label className="mb-1">Banner Image</label>
-            <Controller
-              name="bannerImage"
-              control={control}
-              render={({ field }) => (
-                <FileUploader
-                  value={field.value}
-                  onChange={(e) => field.onChange(e)}
-                />
-              )}
-            />
-          </div>
+            {/* Banner Image */}
+            <div className="flex flex-col">
+              <label className="mb-1">Banner Image</label>
+              <FileUploader
+                value={formData.bannerImage}
+                onChange={(file) => handleChange("bannerImage", file)}
+              />
+            </div>
 
-          {/* Thumbnail */}
-          <div className="flex flex-col">
-            <label className="mb-1">Thumbnail</label>
-            <Controller
-              name="thumbnail"
-              control={control}
-              render={({ field }) => (
-                <FileUploader
-                  value={field.value}
-                  onChange={(e) => field.onChange(e)}
-                />
-              )}
-            />
-          </div>
+            {/* Thumbnail */}
+            <div className="flex flex-col">
+              <label className="mb-1">Thumbnail</label>
+              <FileUploader
+                value={formData.thumbnail}
+                onChange={(file) => handleChange("thumbnail", file)}
+              />
+            </div>
 
-          {/* Video URL */}
-          <div className="flex flex-col col-span-2">
-            <label className="mb-1">Video URL</label>
-            <Controller
-              name="videoUrl"
-              control={control}
-              render={({ field }) => (
-                <FileUploader
-                  value={field.value}
-                  onChange={(e) => field.onChange(e)}
-                />
-              )}
-            />
-          </div>
+            {/* Video URL */}
+            <div className="flex flex-col col-span-2">
+              <label className="mb-1">Video URL</label>
+              <Input
+                value={formData.videoUrl}
+                placeholder="Enter video URL"
+                onChange={(e) => handleChange("videoUrl", e.target.value)}
+              />
+            </div>
 
-          {/* Display Status */}
-          <div className="flex flex-col">
-            <label className="mb-1">Display Status</label>
-            <Controller
-              name="displayStatus"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  options={[
-                    { label: "Inactive", value: 0 },
-                    { label: "Active", value: 1 },
-                  ]}
-                />
-              )}
-            />
-          </div>
+            {/* Display Status */}
+            <div className="flex flex-col">
+              <label className="mb-1">Display Status</label>
+              <Select
+                value={formData.displayStatus}
+                options={[
+                  { label: "Inactive", value: 0 },
+                  { label: "Active", value: 1 },
+                ]}
+                onChange={(value) => handleChange("displayStatus", value)}
+              />
+            </div>
 
-          {/* Show Home Status */}
-          <div className="flex flex-col">
-            <label className="mb-1">Show on Home</label>
-            <Controller
-              name="showHomeStatus"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  options={[
-                    { label: "No", value: 0 },
-                    { label: "Yes", value: 1 },
-                  ]}
-                />
-              )}
-            />
-          </div>
+            {/* Show Home Status */}
+            <div className="flex flex-col">
+              <label className="mb-1">Show on Home</label>
+              <Select
+                value={formData.showHomeStatus}
+                options={[
+                  { label: "No", value: 0 },
+                  { label: "Yes", value: 1 },
+                ]}
+                onChange={(value) => handleChange("showHomeStatus", value)}
+              />
+            </div>
 
-          {/* Meta Title */}
-          <div className="flex flex-col col-span-2">
-            <label className="mb-1">Meta Title</label>
-            <Controller
-              name="metaTitle"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Meta title" />
-              )}
-            />
-          </div>
+            {/* Meta Title */}
+            <div className="flex flex-col col-span-2">
+              <label className="mb-1">Meta Title</label>
+              <Input
+                value={formData.metaTitle}
+                placeholder="Meta title"
+                onChange={(e) => handleChange("metaTitle", e.target.value)}
+              />
+            </div>
 
-          {/* Meta Keyword */}
-          <div className="flex flex-col col-span-2">
-            <label className="mb-1">Meta Keyword</label>
-            <Controller
-              name="metaKeyword"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Meta keywords" />
-              )}
-            />
-          </div>
+            {/* Meta Keyword */}
+            <div className="flex flex-col col-span-2">
+              <label className="mb-1">Meta Keyword</label>
+              <Input
+                value={formData.metaKeyword}
+                placeholder="Meta keywords"
+                onChange={(e) => handleChange("metaKeyword", e.target.value)}
+              />
+            </div>
 
-          {/* Meta Description */}
-          <div className="flex flex-col col-span-2">
-            <label className="mb-1">Meta Description</label>
-            <Controller
-              name="metaDescription"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  as="textarea"
-                  rows={3}
-                  {...field}
-                  placeholder="Meta description"
-                />
-              )}
-            />
-          </div>
-        </form>
-      </Modal>
+            {/* Meta Description */}
+            <div className="flex flex-col col-span-2">
+              <label className="mb-1">Meta Description</label>
+              <Input
+                as="textarea"
+                rows={3}
+                value={formData.metaDescription}
+                placeholder="Meta description"
+                onChange={(e) =>
+                  handleChange("metaDescription", e.target.value)
+                }
+              />
+            </div>
+
+            {/* Submit */}
+            <div className="col-span-2 flex justify-between">
+              <button
+                className="px-6 py-2 rounded-md cursor-pointer"
+                onClick={() => {
+                  setOpenModal(false);
+                  setFormData(initialData);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-6 py-2 rounded-md cursor-pointer hover:bg-green-700"
+              >
+                Submit
+              </button>
+            </div>
+          </form>
+        </>
+      )}
 
       <Modal
         title={"Description"}
