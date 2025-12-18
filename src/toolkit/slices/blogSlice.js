@@ -102,10 +102,10 @@ export const addBlogFAQS = createAsyncThunk(
 
 export const updateBlogFAQS = createAsyncThunk(
   "updateBlogFAQS",
-  async ({ blogId, blogId, userId, data }, { rejectWithValue }) => {
+  async ({ blogId, faqId , userId, data }, { rejectWithValue }) => {
     try {
       const response = await api.put(
-        `/api/blogs/${blogId}/faqs/${blogId}?userId=${userId}`,
+        `/api/blogs/${blogId}/faqs/${faqId }?userId=${userId}`,
         data
       );
       return response.data;
@@ -133,7 +133,7 @@ export const getBlogFaqsList = createAsyncThunk(
   "getBlogFaqsList",
   async (blogId, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/blogs/${blogId}`);
+      const response = await api.get(`/api/blogs/${blogId}/faqs`);
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response.data.message);
